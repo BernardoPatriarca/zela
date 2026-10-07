@@ -5,6 +5,7 @@ import br.edu.unimater.zela.usuario.dto.UsuarioResponseDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioUpdateDto;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -53,13 +54,13 @@ public class UsuarioResource {
 
     @POST
     @ResponseStatus(201)
-    public UsuarioResponseDto criar(UsuarioCreateDto dto) {
+    public UsuarioResponseDto criar(@Valid UsuarioCreateDto dto) {
         return service.criar(dto);
     }
 
     @PUT
     @Path("/{id}")
-    public UsuarioResponseDto atualizar(@PathParam("id") UUID id, UsuarioUpdateDto dto) {
+    public UsuarioResponseDto atualizar(@Valid @PathParam("id") UUID id, UsuarioUpdateDto dto) {
         return service.atualizar(id, dto);
     }
 
