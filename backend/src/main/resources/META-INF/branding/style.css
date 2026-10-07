@@ -1,0 +1,38 @@
+/* Identidade visual ZELA — paleta: Azul Zela #0E2A47, Azul Médio #1F4E79,
+   Dourado #E3B341, Papel #F6F4EF, Grafite #1E2430 */
+
+/* Remove a margem padrão do navegador (as bordas brancas ao redor da barra) */
+body { margin: 0; background-color: #F6F4EF; color: #1E2430; }
+
+/* Faixa do botão Authorize no tom Papel, em vez de branco */
+.swagger-ui .scheme-container { background-color: #F6F4EF; box-shadow: none; border-bottom: 1px solid #E3DFD3; }
+
+/* Barra do topo (logo) com linha dourada de "total" */
+.swagger-ui .topbar {
+  background-color: #0E2A47;
+  border-bottom: 4px solid #E3B341;
+}
+
+/* Título, versão e textos */
+.swagger-ui .info .title,
+.swagger-ui .info h1, .swagger-ui .info h2, .swagger-ui .info h3 { color: #0E2A47; }
+.swagger-ui, .swagger-ui .info p, .swagger-ui .info li { color: #1E2430; }
+.swagger-ui .info .title small { background-color: #1F4E79; }
+.swagger-ui .info a { color: #1F4E79; }
+
+/* Títulos dos grupos (tags) */
+.swagger-ui .opblock-tag { color: #0E2A47; border-bottom-color: #1F4E79; }
+
+/* Botão Authorize */
+.swagger-ui .btn.authorize { color: #1F4E79; border-color: #1F4E79; }
+.swagger-ui .btn.authorize svg { fill: #1F4E79; }
+.swagger-ui .btn.authorize:hover { background-color: #1F4E79; color: #FFFFFF; }
+.swagger-ui .btn.authorize:hover svg { fill: #FFFFFF; }
+
+/* Botões Execute e Try it out */
+.swagger-ui .btn.execute { background-color: #1F4E79; border-color: #1F4E79; color: #FFFFFF; }
+.swagger-ui .btn.try-out__btn { color: #1F4E79; border-color: #1F4E79; }
+
+/* Seletor de servidor e campos */
+.swagger-ui select { border-color: #1F4E79; }
+.swagger-ui input[type=text]:focus, .swagger-ui textarea:focus { outline-color: #E3B341; }
