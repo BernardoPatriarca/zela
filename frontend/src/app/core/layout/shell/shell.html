@@ -5,7 +5,9 @@
       @for (item of itens; track item.rota) {
         <a [routerLink]="item.rota" routerLinkActive="ativo">
           <i [class]="item.icon"></i>
-          @if (menuAberto()) { <span>{{ item.label }}</span> }
+          @if (menuAberto()) {
+            <span>{{ item.label }}</span>
+          }
         </a>
       }
     </nav>

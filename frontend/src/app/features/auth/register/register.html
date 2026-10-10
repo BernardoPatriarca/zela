@@ -1,1 +1,82 @@
-<p>register works!</p>
+<main class="register">
+  <form class="register__card" [formGroup]="form" (ngSubmit)="cadastrar()" novalidate>
+    <h1>Criar conta</h1>
+
+    @if (erro(); as mensagem) {
+      <p-message severity="error" role="alert">{{ mensagem }}</p-message>
+    }
+
+    <div class="campo">
+      <label for="nome">Nome</label>
+      <input pInputText id="nome" formControlName="nome" autocomplete="name" fluid />
+      @if (nome.invalid && nome.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe seu nome.</p-message>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="email">E-mail</label>
+      <input
+        pInputText
+        id="email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        fluid
+      />
+      @if (email.invalid && email.touched) {
+        <p-message severity="error" variant="simple" size="small">
+          @if (email.hasError('required')) {
+            Informe seu e-mail.
+          } @else {
+            E-mail inválido.
+          }
+        </p-message>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="senha">Senha</label>
+      <p-password
+        inputId="senha"
+        formControlName="senha"
+        [feedback]="false"
+        [toggleMask]="true"
+        autocomplete="new-password"
+        fluid
+      />
+      @if (senha.invalid && senha.touched) {
+        <p-message severity="error" variant="simple" size="small">
+          @if (senha.hasError('required')) {
+            Informe uma senha.
+          } @else {
+            A senha precisa ter de 6 a 72 caracteres.
+          }
+        </p-message>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="confirmacao">Confirmar senha</label>
+      <p-password
+        inputId="confirmacao"
+        formControlName="confirmacao"
+        [feedback]="false"
+        [toggleMask]="true"
+        autocomplete="new-password"
+        fluid
+      />
+      @if (confirmacao.invalid && confirmacao.touched) {
+        <p-message severity="error" variant="simple" size="small">Confirme a senha.</p-message>
+      } @else if (form.hasError('senhasDiferentes') && confirmacao.touched) {
+        <p-message severity="error" variant="simple" size="small"
+          >As senhas não conferem.</p-message
+        >
+      }
+    </div>
+
+    <p-button type="submit" label="Criar conta" [loading]="enviando()" fluid />
+
+    <p class="rodape">Já tem conta? <a routerLink="/login">Entrar</a></p>
+  </form>
+</main>

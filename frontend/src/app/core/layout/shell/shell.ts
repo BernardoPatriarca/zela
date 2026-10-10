@@ -6,7 +6,7 @@ import { ButtonModule } from 'primeng/button';
   selector: 'app-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ButtonModule],
   templateUrl: './shell.html',
-  styleUrl: './shell.scss'
+  styleUrl: './shell.scss',
 })
 export class Shell {
   menuAberto = signal(true);
@@ -18,6 +18,6 @@ export class Shell {
     { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
     { label: 'Relatórios', icon: 'pi pi-file-pdf', rota: '/relatorios' },
     { label: 'Prazos', icon: 'pi pi-calendar', rota: '/prazos' },
-    { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' }
+    { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' },
   ];
 }
