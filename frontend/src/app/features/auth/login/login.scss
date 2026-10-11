@@ -1,0 +1,29 @@
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.login__card {
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-content-border-radius);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rodape {
+  text-align: center;
+  margin: 0;
+}

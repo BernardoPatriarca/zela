@@ -17,7 +17,14 @@
     <header class="topbar">
       <p-button icon="pi pi-bars" [text]="true" (onClick)="menuAberto.set(!menuAberto())" />
       <span class="espaco"></span>
-      <p-button icon="pi pi-user" [text]="true" [rounded]="true" />
+      <span>{{ nomeUsuario() }}</span>
+      <p-button
+        icon="pi pi-sign-out"
+        [text]="true"
+        [rounded]="true"
+        ariaLabel="Sair"
+        (onClick)="sair()"
+      />
     </header>
     <main><router-outlet /></main>
   </div>
