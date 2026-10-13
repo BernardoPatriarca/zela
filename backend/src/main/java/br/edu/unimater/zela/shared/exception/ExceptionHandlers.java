@@ -6,6 +6,9 @@ import jakarta.ws.rs.WebApplicationException;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
+import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
 
 import java.util.List;
 
@@ -26,6 +29,21 @@ public class ExceptionHandlers {
     @ServerExceptionMapper
     public RestResponse<ErrorResponse> businessRule(BusinessRuleException e) {
         return build(422, e.getMessage(), null);
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorResponse> naoAutenticado(UnauthorizedException e) {
+        return build(401, "Autenticação necessária.", null);
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorResponse> tokenInvalido(AuthenticationFailedException e) {
+        return build(401, "Token inválido ou expirado.", null);
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorResponse> semPermissao(ForbiddenException e) {
+        return build(403, "Você não tem permissão para esta ação.", null);
     }
 
     @ServerExceptionMapper
