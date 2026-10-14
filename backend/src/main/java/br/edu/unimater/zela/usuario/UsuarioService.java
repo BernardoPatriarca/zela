@@ -7,7 +7,9 @@ import br.edu.unimater.zela.usuario.dto.UsuarioResponseDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioUpdateDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import jakarta.transaction.Transactional;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +20,9 @@ public class UsuarioService {
     @Inject
     UsuarioRepository repository;
 
+    @Inject
+    JsonWebToken jwt;
+
     public List<UsuarioResponseDto> listar() {
         return repository.listar().stream().map(UsuarioResponseDto::from).toList();
     }
@@ -26,6 +31,18 @@ public class UsuarioService {
         Usuario usuario = repository.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         return UsuarioResponseDto.from(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponseDto me() {
+        UUID id = UUID.fromString(jwt.getSubject());
+        String email = jwt.getClaim("email");
+        JsonObject metadata = jwt.getClaim("user_metadata");
+        String nome = metadata == null ? null : metadata.getString("nome", null);
+
+        return repository.buscarPorId(id)
+                .map(UsuarioResponseDto::from)
+                .orElseGet(() -> provisionar(id, email, nome));
     }
 
     @Transactional
@@ -72,5 +89,21 @@ public class UsuarioService {
         if (!repository.excluir(id)) {
             throw new ResourceNotFoundException("Usuário não encontrado.");
         }
+    }
+
+    private UsuarioResponseDto provisionar(UUID id, String email, String nome) {
+        String emailNormalizado = email.trim().toLowerCase();
+
+        if (repository.buscarPorEmail(emailNormalizado).isPresent()) {
+            throw new ConflictException("E-mail já cadastrado.");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.id = id;
+        usuario.nome = nome == null || nome.isBlank() ? emailNormalizado : nome.trim();
+        usuario.email = emailNormalizado;
+
+        repository.persistAndFlush(usuario);
+        return UsuarioResponseDto.from(usuario);
     }
 }

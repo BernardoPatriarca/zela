@@ -15,7 +15,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
@@ -32,9 +31,6 @@ public class UsuarioResource {
     @Inject
     UsuarioService service;
 
-    @Inject
-    JsonWebToken jwt;
-
     @GET
     public List<UsuarioResponseDto> listar() {
         return service.listar();
@@ -43,7 +39,7 @@ public class UsuarioResource {
     @GET
     @Path("/me")
     public UsuarioResponseDto me() {
-        return service.buscarPorId(UUID.fromString(jwt.getSubject()));
+        return service.me();
     }
 
     @GET
