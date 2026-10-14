@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../auth/auth-service';
@@ -29,6 +29,14 @@ export class Shell {
     { label: 'Prazos', icon: 'pi pi-calendar', rota: '/prazos' },
     { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' },
   ];
+
+  constructor() {
+    effect(() => {
+      if (!this.auth.autenticado()) {
+        void this.router.navigateByUrl('/login');
+      }
+    });
+  }
 
   async sair(): Promise<void> {
     await this.auth.sair();

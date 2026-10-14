@@ -74,8 +74,8 @@ export class AuthService {
   }
 
   async sair(): Promise<void> {
-    await this.supabase.auth.signOut();
     this._sessao.set(null);
+    await this.supabase.auth.signOut();
   }
 
   async obterAccessToken(): Promise<string | null> {
