@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Quarkus HTTP - backend-1.0.0-SNAPSHOT
+
+Parameters:
+  DbUrl:
+    Type: String
+  DbUser:
+    Type: String
+  DbPassword:
+    Type: String
+    NoEcho: true
+
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+    BinaryMediaTypes:
+      - "*/*"
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      AllowHeaders:
+        - Authorization
+        - Content-Type
+
+Resources:
+  Backend:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      Runtime: java21
+      CodeUri: target/function.zip
+      MemorySize: 1024
+      Timeout: 30
+      Policies: AWSLambdaBasicExecutionRole
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Environment:
+        Variables:
+          SUPABASE_DB_URL: !Ref DbUrl
+          SUPABASE_DB_USER: !Ref DbUser
+          SUPABASE_DB_PASSWORD: !Ref DbPassword
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+
+  BackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Backend}
+      RetentionInDays: 7
+
+Outputs:
+  BackendApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/'
+    Export:
+      Name: BackendApi
