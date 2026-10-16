@@ -1,12 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
-import { UsuarioApi } from '../../../core/api/usuario-api';
 import { AuthService } from '../../../core/auth/auth-service';
 import { criarRegisterForm } from '../forms/register.form';
 
@@ -18,7 +16,6 @@ import { criarRegisterForm } from '../forms/register.form';
 })
 export class Register {
   private readonly auth = inject(AuthService);
-  private readonly api = inject(UsuarioApi);
   private readonly router = inject(Router);
 
   readonly enviando = signal(false);
@@ -60,10 +57,6 @@ export class Register {
         this.erro.set(resultado.mensagem);
         return;
       }
-
-      await firstValueFrom(this.api.garantirPerfil()).catch((e) =>
-        console.error('Não foi possível criar o perfil agora', e),
-      );
 
       await this.router.navigateByUrl('/');
     } finally {

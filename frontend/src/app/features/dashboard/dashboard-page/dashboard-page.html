@@ -1,1 +1,14 @@
-<p>dashboard-page works!</p>
+<section class="painel">
+  @if (carregando()) {
+    <p-skeleton width="18rem" height="2rem" />
+    <p-skeleton width="14rem" height="1.25rem" />
+  } @else if (erro()) {
+    <p-message severity="error" role="alert">
+      Não conseguimos carregar seus dados agora. Tente novamente em instantes.
+    </p-message>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  } @else if (usuario(); as dados) {
+    <h1>Olá, {{ dados.nome }}!</h1>
+    <p class="email">Você entrou com {{ dados.email }}.</p>
+  }
+</section>

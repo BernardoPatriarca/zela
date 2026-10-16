@@ -13,7 +13,7 @@ export interface UsuarioResponse {
 export class UsuarioApi {
   private readonly http = inject(HttpClient);
 
-  garantirPerfil(): Observable<UsuarioResponse> {
-    return this.http.post<UsuarioResponse>(`${environment.apiUrl}/usuarios/me`, null);
+  obterPerfil(): Observable<UsuarioResponse> {
+    return this.http.get<UsuarioResponse>(`${environment.apiUrl}/usuarios/me`);
   }
 }

@@ -1,12 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
-import { UsuarioApi } from '../../../core/api/usuario-api';
 import { AuthService } from '../../../core/auth/auth-service';
 import { criarLoginForm } from '../forms/login.form';
 
@@ -18,7 +16,6 @@ import { criarLoginForm } from '../forms/login.form';
 })
 export class Login {
   private readonly auth = inject(AuthService);
-  private readonly api = inject(UsuarioApi);
   private readonly router = inject(Router);
 
   readonly enviando = signal(false);
@@ -52,10 +49,6 @@ export class Login {
         this.erro.set(resultado.mensagem);
         return;
       }
-
-      await firstValueFrom(this.api.garantirPerfil()).catch((e) =>
-        console.error('Não foi possível garantir o perfil agora', e),
-      );
 
       await this.router.navigateByUrl('/');
     } finally {
