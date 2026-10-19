@@ -1,0 +1,15 @@
+<header class="topbar">
+  <p-button icon="pi pi-bars" [text]="true" ariaLabel="Alternar menu" (onClick)="alternarMenu.emit()" />
+  <img class="logo" src="images/zela-horizontal-negativo.svg" alt="ZELA" width="102" height="36" />
+  <span class="espaco"></span>
+  <div class="usuario">
+    <img class="avatar" src="images/usuario-padrao.png" alt="" width="32" height="32" />
+    <span class="nome">{{ nomeUsuario() }}</span>
+  </div>
+  <p-button icon="pi pi-bell" [text]="true" [rounded]="true" ariaLabel="Notificações" />
+  <a class="suporte" [href]="suporteUrl" target="_blank" rel="noopener noreferrer" aria-label="Falar com o suporte"
+    title="Suporte">
+    <i class="pi pi-headphones"></i>
+  </a>
+  <p-button icon="pi pi-sign-out" [text]="true" [rounded]="true" ariaLabel="Sair" (onClick)="sair()" />
+</header>

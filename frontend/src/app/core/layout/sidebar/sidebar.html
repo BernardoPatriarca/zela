@@ -1,0 +1,12 @@
+<aside class="sidebar" [class.fechado]="!aberto()">
+  <nav>
+    @for (item of itens; track item.rota) {
+    <a [routerLink]="item.rota" routerLinkActive="ativo">
+      <i [class]="item.icon"></i>
+      @if (aberto()) {
+      <span>{{ item.label }}</span>
+      }
+    </a>
+    }
+  </nav>
+</aside>

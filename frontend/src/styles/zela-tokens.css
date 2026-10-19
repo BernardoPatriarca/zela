@@ -1,0 +1,19 @@
+:root {
+  --zela-navy-900: #0E2A47;
+  --zela-navy-700: #1D4570;
+  --zela-navy-500: #3F6A99;
+  --zela-navy-100: #D9E3EE;
+  --zela-navy-50: #F1F5F9;
+  --zela-gold-500: #E3B341;
+  --zela-gold-700: #8A6410;
+  --zela-gold-100: #FAEFD0;
+  --zela-ink-600: #475A70;
+  --zela-success: #1E7A4F;
+  --zela-danger: #B3261E;
+  --zela-font-display: 'Sora', system-ui, sans-serif;
+  --zela-font-body: 'Public Sans', system-ui, sans-serif;
+  --zela-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --zela-radius-control: 10px;
+  --zela-radius-card: 16px;
+  --zela-target-min: 44px;
+}

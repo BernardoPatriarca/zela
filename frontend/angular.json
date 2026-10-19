@@ -30,7 +30,16 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": [
+              "node_modules/@fontsource/sora/600.css",
+              "node_modules/@fontsource/sora/700.css",
+              "node_modules/@fontsource/public-sans/400.css",
+              "node_modules/@fontsource/public-sans/500.css",
+              "node_modules/@fontsource/public-sans/600.css",
+              "node_modules/@fontsource/jetbrains-mono/400.css",
+              "src/styles/zela-tokens.css",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

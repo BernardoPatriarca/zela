@@ -1,4 +1,42 @@
 @import 'primeicons/primeicons.css';
 
-html, body { height: 100%; margin: 0; }
-body { font-family: var(--p-font-family, system-ui, sans-serif); background: var(--p-surface-50); }
+:root {
+  --zela-fundo: color-mix(in srgb, var(--zela-gold-100) 25%, white);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--zela-font-body);
+  color: var(--zela-navy-900);
+  background: var(--zela-fundo);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--zela-font-display);
+  font-weight: 700;
+}
+
+a {
+  color: var(--p-primary-color);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.valor {
+  font-family: var(--zela-font-mono);
+  font-variant-numeric: tabular-nums;
+}

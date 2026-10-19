@@ -1,31 +1,8 @@
 <div class="layout">
-  <aside class="sidebar" [class.fechado]="!menuAberto()">
-    <div class="logo">ZELA</div>
-    <nav>
-      @for (item of itens; track item.rota) {
-        <a [routerLink]="item.rota" routerLinkActive="ativo">
-          <i [class]="item.icon"></i>
-          @if (menuAberto()) {
-            <span>{{ item.label }}</span>
-          }
-        </a>
-      }
-    </nav>
-  </aside>
+  <app-topbar (alternarMenu)="menuAberto.set(!menuAberto())" />
 
-  <div class="conteudo">
-    <header class="topbar">
-      <p-button icon="pi pi-bars" [text]="true" (onClick)="menuAberto.set(!menuAberto())" />
-      <span class="espaco"></span>
-      <span>{{ nomeUsuario() }}</span>
-      <p-button
-        icon="pi pi-sign-out"
-        [text]="true"
-        [rounded]="true"
-        ariaLabel="Sair"
-        (onClick)="sair()"
-      />
-    </header>
+  <div class="corpo">
+    <app-sidebar [aberto]="menuAberto()" />
     <main><router-outlet /></main>
   </div>
 </div>

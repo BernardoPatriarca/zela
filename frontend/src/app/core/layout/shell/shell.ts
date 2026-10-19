@@ -1,11 +1,12 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
+import { Component, effect, inject, signal } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../auth/auth-service';
+import { Sidebar } from '../sidebar/sidebar';
+import { Topbar } from '../topbar/topbar';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ButtonModule],
+  imports: [RouterOutlet, Topbar, Sidebar],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -15,31 +16,11 @@ export class Shell {
 
   menuAberto = signal(true);
 
-  readonly nomeUsuario = computed(() => {
-    const usuario = this.auth.usuario();
-    return usuario?.user_metadata?.['nome'] ?? usuario?.email ?? '';
-  });
-
-  itens = [
-    { label: 'Painel', icon: 'pi pi-home', rota: '/dashboard' },
-    { label: 'Casos', icon: 'pi pi-briefcase', rota: '/casos' },
-    { label: 'Lançamentos', icon: 'pi pi-wallet', rota: '/lancamentos' },
-    { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
-    { label: 'Relatórios', icon: 'pi pi-file-pdf', rota: '/relatorios' },
-    { label: 'Prazos', icon: 'pi pi-calendar', rota: '/prazos' },
-    { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' },
-  ];
-
   constructor() {
     effect(() => {
       if (!this.auth.autenticado()) {
         void this.router.navigateByUrl('/login');
       }
     });
-  }
-
-  async sair(): Promise<void> {
-    await this.auth.sair();
-    await this.router.navigateByUrl('/login');
   }
 }

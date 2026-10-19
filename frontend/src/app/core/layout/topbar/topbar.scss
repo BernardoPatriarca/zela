@@ -1,0 +1,62 @@
+:host {
+  display: block;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 3.75rem;
+  padding: 0 1rem;
+  background: var(--zela-navy-900);
+  border-bottom: 3px solid var(--zela-gold-500);
+  color: #fff;
+  --p-button-text-primary-color: #fff;
+  --p-button-text-primary-hover-background: rgba(255, 255, 255, 0.12);
+  --p-button-text-primary-active-background: rgba(255, 255, 255, 0.2);
+}
+
+.logo {
+  display: block;
+  height: 2.25rem;
+  width: auto;
+}
+
+.espaco {
+  flex: 1;
+}
+
+.suporte {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1rem;
+  text-decoration: none;
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 0.75rem;
+}
+
+.avatar {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+@media (max-width: 600px) {
+  .nome {
+    display: none;
+  }
+}

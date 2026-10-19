@@ -3,6 +3,15 @@
   display: grid;
   place-items: center;
   padding: 1rem;
+  background:
+    linear-gradient(rgba(14, 42, 71, 0.8), rgba(14, 42, 71, 0.62)),
+    url('/images/fundo-justica-1920.jpg') 62% center / cover no-repeat;
+
+  @media (max-width: 900px) {
+    background:
+      linear-gradient(rgba(14, 42, 71, 0.8), rgba(14, 42, 71, 0.62)),
+      url('/images/fundo-justica-960.jpg') 62% center / cover no-repeat;
+  }
 }
 
 .register__card {
@@ -15,6 +24,7 @@
   background: var(--p-content-background);
   border: 1px solid var(--p-content-border-color);
   border-radius: var(--p-content-border-radius);
+  box-shadow: 0 1.25rem 2.5rem rgba(14, 42, 71, 0.35);
 }
 
 .campo {
@@ -26,4 +36,16 @@
 .rodape {
   text-align: center;
   margin: 0;
+}
+
+.logo {
+  display: block;
+  width: 12rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0;
+  text-align: center;
 }
