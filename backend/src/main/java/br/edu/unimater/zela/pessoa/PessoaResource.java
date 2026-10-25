@@ -1,0 +1,63 @@
+package br.edu.unimater.zela.pessoa;
+
+import br.edu.unimater.zela.pessoa.dto.PessoaCreateDto;
+import br.edu.unimater.zela.pessoa.dto.PessoaResponseDto;
+import br.edu.unimater.zela.pessoa.dto.PessoaUpdateDto;
+import io.quarkus.security.Authenticated;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.reactive.ResponseStatus;
+
+import java.util.List;
+import java.util.UUID;
+
+@Path("/pessoas")
+@Authenticated
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Tag(name = "Pessoas")
+public class PessoaResource {
+
+    @Inject
+    PessoaService service;
+
+    @GET
+    public List<PessoaResponseDto> listar(@QueryParam("busca") String busca) {
+        return service.listar(busca);
+    }
+
+    @GET
+    @Path("/{id}")
+    public PessoaResponseDto buscar(@PathParam("id") UUID id) {
+        return service.buscarPorId(id);
+    }
+
+    @POST
+    @ResponseStatus(201)
+    public PessoaResponseDto criar(@Valid PessoaCreateDto dto) {
+        return service.criar(dto);
+    }
+
+    @PUT
+    @Path("/{id}")
+    public PessoaResponseDto atualizar(@PathParam("id") UUID id, @Valid PessoaUpdateDto dto) {
+        return service.atualizar(id, dto);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public void excluir(@PathParam("id") UUID id) {
+        service.excluir(id);
+    }
+}

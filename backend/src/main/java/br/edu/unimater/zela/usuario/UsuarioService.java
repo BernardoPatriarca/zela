@@ -91,6 +91,11 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
+    public UUID garantirUsuarioLogado() {
+        return me().id();
+    }
+
     private UsuarioResponseDto provisionar(UUID id, String email, String nome) {
         String emailNormalizado = email.trim().toLowerCase();
 
