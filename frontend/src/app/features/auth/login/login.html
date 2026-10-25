@@ -1,13 +1,13 @@
-<main class="login">
-  <form class="login__card" [formGroup]="form" (ngSubmit)="entrar()" novalidate>
-    <img class="logo" src="images/zela-horizontal.svg" alt="ZELA" width="192" height="68" />
-    <h1>Entrar</h1>
+<main class="login grid min-h-screen place-items-center p-4">
+  <form class="flex w-full max-w-[26rem] flex-col gap-4 rounded-border border border-surface bg-surface-0 p-8 shadow-[0_1.25rem_2.5rem_rgba(14,42,71,0.35)]" [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+    <img class="mx-auto block h-auto w-48" src="images/zela-horizontal.svg" alt="ZELA" width="192" height="68" />
+    <h1 class="text-center">Entrar</h1>
 
     @if (erro(); as mensagem) {
     <p-message severity="error" role="alert">{{ mensagem }}</p-message>
     }
 
-    <div class="campo">
+    <div class="flex flex-col gap-1.5">
       <label for="email">E-mail</label>
       <input pInputText id="email" type="email" formControlName="email" autocomplete="email" fluid />
       @if (email.invalid && email.touched) {
@@ -21,7 +21,7 @@
       }
     </div>
 
-    <div class="campo">
+    <div class="flex flex-col gap-1.5">
       <label for="senha">Senha</label>
       <p-password inputId="senha" formControlName="senha" [feedback]="false" [toggleMask]="true"
         autocomplete="current-password" fluid />
@@ -32,6 +32,6 @@
 
     <p-button type="submit" label="Entrar" [loading]="enviando()" fluid />
 
-    <p class="rodape">Não tem conta? <a routerLink="/register">Criar conta</a></p>
+    <p class="text-center">Não tem conta? <a routerLink="/register">Criar conta</a></p>
   </form>
 </main>

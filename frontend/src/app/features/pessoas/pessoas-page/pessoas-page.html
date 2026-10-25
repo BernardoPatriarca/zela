@@ -1,0 +1,101 @@
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Pessoas</h1>
+    <p-button label="Nova pessoa" icon="pi pi-plus" (onClick)="novo()" />
+  </header>
+
+  <p-iconfield class="max-w-sm">
+    <p-inputicon class="pi pi-search" />
+    <input pInputText #campoBusca placeholder="Buscar por nome" (input)="buscar(campoBusca.value)" fluid />
+  </p-iconfield>
+
+  @if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar as pessoas agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="pessoas()" [loading]="carregando()" [paginator]="true" [rows]="10" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Nascimento</th>
+        <th class="w-24"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-pessoa>
+      <tr>
+        <td>{{ pessoa.nome }}</td>
+        <td class="valor">{{ pessoa.cpf | cpf }}</td>
+        <td>{{ pessoa.dataNascimento | date: 'dd/MM/yyyy' }}</td>
+        <td class="w-24 whitespace-nowrap text-right">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(pessoa)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="excluir(pessoa)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">Nenhuma pessoa encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true" [header]="editandoId() ? 'Editar pessoa' : 'Nova pessoa'"
+    [style]="{ width: '40rem' }" [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="nome">Nome</label>
+        <input pInputText id="nome" formControlName="nome" maxlength="150" fluid />
+        @if (nome.invalid && nome.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o nome.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="cpf">CPF</label>
+        <p-inputmask inputId="cpf" formControlName="cpf" mask="999.999.999-99" [unmask]="true"
+          [autoClear]="false" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="dataNascimento">Data de nascimento</label>
+        <p-datepicker inputId="dataNascimento" formControlName="dataNascimento" dateFormat="dd/mm/yy"
+          [maxDate]="hoje" [showIcon]="true" appendTo="body" fluid />
+        @if (dataNascimento.invalid && dataNascimento.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a data de nascimento.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="endereco">Endereço</label>
+        <input pInputText id="endereco" formControlName="endereco" maxlength="255" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="observacao">Observações</label>
+        <textarea pTextarea id="observacao" formControlName="observacao" rows="4" maxlength="1000"
+          placeholder="Informações práticas sobre residência, contatos e rotina. Não registre diagnósticos ou dados de saúde."
+          fluid></textarea>
+      </div>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

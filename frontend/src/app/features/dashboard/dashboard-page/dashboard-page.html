@@ -1,4 +1,4 @@
-<section class="painel">
+<section class="flex flex-col items-start gap-3">
   @if (carregando()) {
     <p-skeleton width="18rem" height="2rem" />
     <p-skeleton width="14rem" height="1.25rem" />
@@ -9,6 +9,6 @@
     <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
   } @else if (usuario(); as dados) {
     <h1>Olá, {{ dados.nome }}!</h1>
-    <p class="email">Você entrou com {{ dados.email }}.</p>
+    <p class="text-muted-color">Você entrou com {{ dados.email }}.</p>
   }
 </section>

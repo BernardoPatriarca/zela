@@ -3,12 +3,11 @@ import { firstValueFrom } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { Skeleton } from 'primeng/skeleton';
-import { UsuarioApi, UsuarioResponse } from '../../../core/api/usuario-api';
+import { UsuarioApi, UsuarioResponse } from '../../../core/auth/usuario-api';
 
 @Component({
   imports: [Button, Message, Skeleton],
   selector: 'app-dashboard-page',
-  styleUrl: './dashboard-page.scss',
   templateUrl: './dashboard-page.html',
 })
 export class DashboardPage {

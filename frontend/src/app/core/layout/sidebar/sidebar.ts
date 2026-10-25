@@ -12,6 +12,7 @@ export class Sidebar {
 
   itens = [
     { label: 'Painel', icon: 'pi pi-home', rota: '/dashboard' },
+    { label: 'Pessoas', icon: 'pi pi-users', rota: '/pessoas' },
     { label: 'Casos', icon: 'pi pi-briefcase', rota: '/casos' },
     { label: 'Lançamentos', icon: 'pi pi-wallet', rota: '/lancamentos' },
     { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
