@@ -44,6 +44,14 @@ export const routes: Routes = [
           import('./features/casos/casos-page/casos-page').then((m) => m.CasosPage),
       },
       {
+        path: 'contas-bancarias',
+        title: 'Contas bancárias',
+        loadComponent: () =>
+          import('./features/contas-bancarias/contas-bancarias-page/contas-bancarias-page').then(
+            (m) => m.ContasBancariasPage,
+          ),
+      },
+      {
         path: 'lancamentos',
         title: 'Lançamentos',
         loadComponent: () =>
@@ -78,6 +86,18 @@ export const routes: Routes = [
         title: 'Histórico',
         loadComponent: () =>
           import('./features/historico/historico-page/historico-page').then((m) => m.HistoricoPage),
+      },
+      {
+        path: 'comarcas',
+        title: 'Comarcas',
+        loadComponent: () =>
+          import('./features/comarcas/comarcas-page/comarcas-page').then((m) => m.ComarcasPage),
+      },
+      {
+        path: 'varas',
+        title: 'Varas',
+        loadComponent: () =>
+          import('./features/varas/varas-page/varas-page').then((m) => m.VarasPage),
       },
     ],
   },

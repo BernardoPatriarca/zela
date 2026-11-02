@@ -3,11 +3,16 @@ package br.edu.unimater.zela.pessoa;
 import br.edu.unimater.zela.pessoa.dto.PessoaCreateDto;
 import br.edu.unimater.zela.pessoa.dto.PessoaResponseDto;
 import br.edu.unimater.zela.pessoa.dto.PessoaUpdateDto;
+import br.edu.unimater.zela.shared.dto.OpcaoDto;
+import br.edu.unimater.zela.shared.dto.Pagina;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -33,8 +38,16 @@ public class PessoaResource {
     PessoaService service;
 
     @GET
-    public List<PessoaResponseDto> listar(@QueryParam("busca") String busca) {
-        return service.listar(busca);
+    public Pagina<PessoaResponseDto> listar(@QueryParam("busca") String busca,
+                                            @QueryParam("pagina") @DefaultValue("0") @Min(0) int pagina,
+                                            @QueryParam("tamanho") @DefaultValue("10") @Min(1) @Max(100) int tamanho) {
+        return service.listar(busca, pagina, tamanho);
+    }
+
+    @GET
+    @Path("/opcoes")
+    public List<OpcaoDto> listarOpcoes() {
+        return service.listarOpcoes();
     }
 
     @GET

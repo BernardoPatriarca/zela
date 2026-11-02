@@ -1,1 +1,220 @@
-<h1>Casos</h1>
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Casos</h1>
+    <p-button label="Novo caso" icon="pi pi-plus" (onClick)="novo()" />
+  </header>
+
+  <div class="flex flex-wrap gap-3">
+    <p-iconfield class="w-full md:max-w-sm">
+      <p-inputicon class="pi pi-search" />
+      <input pInputText #campoBusca placeholder="Buscar por pessoa ou número do processo"
+        (input)="buscar(campoBusca.value)" fluid />
+    </p-iconfield>
+
+    <p-select class="w-full md:w-40" [options]="tipos" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.tipo" (onChange)="filtrar()" placeholder="Todos os tipos" [showClear]="true" />
+
+    <p-select class="w-full md:w-64" [options]="comarcas()" optionLabel="nome" optionValue="id"
+      [(ngModel)]="filtro.comarcaId" (onChange)="filtrar()" placeholder="Todas as comarcas" [filter]="true"
+      filterBy="nome" [showClear]="true" />
+
+    <p-select class="w-full md:w-40" [options]="situacoes" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
+  </div>
+
+  @if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar os casos agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="casos()" [loading]="carregando()" [lazy]="true" (onLazyLoad)="paginar($event)"
+    [paginator]="true" [rows]="linhas" [first]="primeiro()" [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Processo</th>
+        <th>Pessoa protegida</th>
+        <th>Responsável</th>
+        <th>Tipo</th>
+        <th>Comarca / Vara</th>
+        <th>Próxima entrega</th>
+        <th>Situação</th>
+        <th class="w-44"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-caso>
+      <tr>
+        <td class="valor whitespace-nowrap">{{ caso.numeroProcesso | cnj }}</td>
+        <td>{{ caso.pessoaProtegidaNome }}</td>
+        <td>{{ caso.responsavelNome }}</td>
+        <td>{{ caso.tipo === 'CURATELA' ? 'Curatela' : 'Tutela' }}</td>
+        <td>
+          <div>{{ caso.comarcaNome }}</div>
+          <small class="text-muted-color">{{ caso.varaNome }}</small>
+        </td>
+        <td>{{ caso.periodoAtual ? (caso.periodoAtual.prazoEntrega | date: 'dd/MM/yyyy') : '-' }}</td>
+        <td>
+          @if (caso.situacao === 'ATIVO') {
+          <p-tag value="Ativo" severity="success" />
+          } @else {
+          <p-tag value="Encerrado" severity="secondary" />
+          }
+        </td>
+        <td class="w-44 whitespace-nowrap text-right">
+          <p-button icon="pi pi-credit-card" [text]="true" [rounded]="true" ariaLabel="Contas bancárias"
+            pTooltip="Contas bancárias" tooltipPosition="top" (onClick)="abrirContas(caso)" />
+          @if (caso.situacao === 'ATIVO') {
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(caso)" />
+          <p-button icon="pi pi-lock" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Encerrar"
+            pTooltip="Encerrar" tooltipPosition="top" (onClick)="abrirEncerramento(caso)" />
+          } @else {
+          <p-button icon="pi pi-lock-open" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Reabrir"
+            pTooltip="Reabrir" tooltipPosition="top" (onClick)="reabrir(caso)" />
+          }
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="excluir(caso)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">Nenhum caso encontrado.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true" [header]="editandoId() ? 'Editar caso' : 'Novo caso'"
+    [style]="{ width: '48rem' }" [breakpoints]="{ '768px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-5">
+        <label for="tipo">Tipo</label>
+        <p-selectbutton id="tipo" formControlName="tipo" [options]="tipos" optionLabel="label"
+          optionValue="value" [allowEmpty]="false" />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-7">
+        <label for="numeroProcesso">Número do processo</label>
+        <p-inputmask inputId="numeroProcesso" formControlName="numeroProcesso" mask="9999999-99.9999.9.99.9999"
+          [unmask]="true" [autoClear]="false" fluid />
+        @if (numeroProcesso.invalid && numeroProcesso.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o número completo do processo.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="pessoaProtegidaId">Pessoa protegida</label>
+        <p-select inputId="pessoaProtegidaId" formControlName="pessoaProtegidaId" [options]="pessoas()"
+          optionLabel="nome" optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione"
+          appendTo="body" fluid />
+        @if (pessoaProtegidaId.invalid && pessoaProtegidaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a pessoa protegida.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="responsavelId">{{ form.controls.tipo.value === 'TUTELA' ? 'Tutor' : 'Curador' }}</label>
+        <p-select inputId="responsavelId" formControlName="responsavelId" [options]="pessoas()"
+          optionLabel="nome" optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione"
+          appendTo="body" fluid />
+        @if (responsavelId.invalid && responsavelId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione o responsável.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="comarcaId">Comarca</label>
+        <p-select inputId="comarcaId" formControlName="comarcaId" [options]="comarcas()" optionLabel="nome"
+          optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione" appendTo="body"
+          (onChange)="trocarComarca($event.value)" fluid />
+        @if (comarcaId.invalid && comarcaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a comarca.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="varaId">Vara</label>
+        <p-select inputId="varaId" formControlName="varaId" [options]="varas()" optionLabel="nome"
+          optionValue="id" [placeholder]="comarcaId.value ? 'Selecione' : 'Selecione a comarca primeiro'"
+          emptyMessage="Nenhuma vara cadastrada nesta comarca" appendTo="body" fluid />
+        @if (varaId.invalid && varaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a vara.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="periodicidadeMeses">Periodicidade (meses)</label>
+        <p-inputnumber inputId="periodicidadeMeses" formControlName="periodicidadeMeses" [min]="1" [max]="60"
+          [useGrouping]="false" fluid />
+        @if (periodicidadeMeses.invalid && periodicidadeMeses.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe de 1 a 60 meses.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="prazoEntregaDias">Prazo de entrega (dias)</label>
+        <p-inputnumber inputId="prazoEntregaDias" formControlName="prazoEntregaDias" [min]="0" [max]="365"
+          [useGrouping]="false" fluid />
+        @if (prazoEntregaDias.invalid && prazoEntregaDias.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe de 0 a 365 dias.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="inicioPeriodo">Início do período atual</label>
+        <p-datepicker inputId="inicioPeriodo" formControlName="inicioPeriodo" dateFormat="dd/mm/yy"
+          [showIcon]="true" appendTo="body" fluid />
+        @if (inicioPeriodo.invalid && inicioPeriodo.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o início do período.</p-message>
+        }
+      </div>
+
+      <small class="col-span-12 text-muted-color">
+        O fim do período e a data de entrega são calculados a partir da periodicidade e do prazo.
+      </small>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog [visible]="casoEncerrando() !== null" (visibleChange)="fecharEncerramento()" [modal]="true"
+    header="Encerrar caso" [style]="{ width: '28rem' }" [breakpoints]="{ '640px': '95vw' }">
+    <div class="flex flex-col gap-4">
+      @if (erroEncerramento(); as mensagem) {
+      <p-message severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <p>
+        O caso de <strong>{{ casoEncerrando()?.pessoaProtegidaNome }}</strong> deixará de aparecer entre os
+        ativos, mas o histórico continua disponível.
+      </p>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="dataEncerramento">Data de encerramento</label>
+        <p-datepicker inputId="dataEncerramento" [formControl]="dataEncerramento" dateFormat="dd/mm/yy"
+          [maxDate]="hoje" [showIcon]="true" appendTo="body" fluid />
+        @if (dataEncerramento.invalid && dataEncerramento.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a data de encerramento.</p-message>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="fecharEncerramento()" />
+        <p-button label="Encerrar" severity="danger" [loading]="encerrando()" (onClick)="encerrar()" />
+      </div>
+    </div>
+  </p-dialog>
+</section>

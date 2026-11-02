@@ -1,8 +1,12 @@
 package br.edu.unimater.zela.pessoa;
 
+import br.edu.unimater.zela.caso.CasoRepository;
 import br.edu.unimater.zela.pessoa.dto.PessoaCreateDto;
 import br.edu.unimater.zela.pessoa.dto.PessoaResponseDto;
 import br.edu.unimater.zela.pessoa.dto.PessoaUpdateDto;
+import br.edu.unimater.zela.shared.dto.OpcaoDto;
+import br.edu.unimater.zela.shared.dto.Pagina;
+import br.edu.unimater.zela.shared.exception.BusinessRuleException;
 import br.edu.unimater.zela.shared.exception.ConflictException;
 import br.edu.unimater.zela.shared.exception.ResourceNotFoundException;
 import br.edu.unimater.zela.shared.util.Texto;
@@ -22,13 +26,22 @@ public class PessoaService {
     PessoaRepository repository;
 
     @Inject
+    CasoRepository casoRepository;
+
+    @Inject
     UsuarioService usuarioService;
 
     @Inject
     JsonWebToken jwt;
 
-    public List<PessoaResponseDto> listar(String busca) {
-        return repository.listar(usuarioLogado(), busca).stream().map(PessoaResponseDto::from).toList();
+    public Pagina<PessoaResponseDto> listar(String busca, int pagina, int tamanho) {
+        return repository.listar(usuarioLogado(), busca, pagina, tamanho).map(PessoaResponseDto::from);
+    }
+
+    public List<OpcaoDto> listarOpcoes() {
+        return repository.listarOpcoes(usuarioLogado()).stream()
+                .map(pessoa -> new OpcaoDto(pessoa.id, pessoa.nome))
+                .toList();
     }
 
     public PessoaResponseDto buscarPorId(UUID id) {
@@ -71,7 +84,11 @@ public class PessoaService {
 
     @Transactional
     public void excluir(UUID id) {
-        if (!repository.excluir(id, usuarioLogado())) {
+        UUID usuarioId = usuarioLogado();
+        if (casoRepository.existePorPessoa(id, usuarioId)) {
+            throw new BusinessRuleException("Esta pessoa está vinculada a um caso e não pode ser excluída.");
+        }
+        if (!repository.excluir(id, usuarioId)) {
             throw new ResourceNotFoundException("Pessoa não encontrada.");
         }
     }

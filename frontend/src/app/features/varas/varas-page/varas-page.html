@@ -1,0 +1,99 @@
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Varas</h1>
+    <p-button label="Nova vara" icon="pi pi-plus" (onClick)="nova()" />
+  </header>
+
+  <div class="flex flex-wrap gap-3">
+    <p-select class="w-full md:w-72" [options]="comarcas()" optionLabel="nome" optionValue="id"
+      [ngModel]="comarcaFiltro" (ngModelChange)="filtrarPorComarca($event)" placeholder="Todas as comarcas"
+      [filter]="true" filterBy="nome" [showClear]="true" />
+
+    <p-iconfield class="w-full md:max-w-sm">
+      <p-inputicon class="pi pi-search" />
+      <input pInputText #campoBusca placeholder="Buscar por nome" (input)="buscar(campoBusca.value)" fluid />
+    </p-iconfield>
+  </div>
+
+  @if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar as varas agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="varas()" [loading]="carregando()" [lazy]="true" (onLazyLoad)="paginar($event)"
+    [paginator]="true" [rows]="linhas" [first]="primeiro()" [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Nome</th>
+        <th>Comarca</th>
+        <th class="w-32">Origem</th>
+        <th class="w-24"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-vara>
+      <tr>
+        <td>{{ vara.nome }}</td>
+        <td>{{ vara.comarcaNome }}/{{ vara.comarcaUf }}</td>
+        <td>
+          @if (vara.sistema) {
+          <p-tag value="Sistema" severity="secondary" />
+          } @else {
+          <p-tag value="Minha" />
+          }
+        </td>
+        <td class="w-24 whitespace-nowrap text-right">
+          @if (!vara.sistema) {
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(vara)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="excluir(vara)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">Nenhuma vara encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true" [header]="editandoId() ? 'Editar vara' : 'Nova vara'"
+    [style]="{ width: '36rem' }" [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="comarcaId">Comarca</label>
+        <p-select inputId="comarcaId" formControlName="comarcaId" [options]="comarcas()" optionLabel="nome"
+          optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione" appendTo="body" fluid />
+        @if (comarcaId.invalid && comarcaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a comarca.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="nome">Nome</label>
+        <input pInputText id="nome" formControlName="nome" maxlength="150"
+          placeholder="Ex.: Vara de Família e Sucessões" fluid />
+        @if (nome.invalid && nome.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o nome.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

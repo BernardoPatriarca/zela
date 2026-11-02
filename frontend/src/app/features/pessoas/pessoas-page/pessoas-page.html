@@ -20,7 +20,8 @@
     <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
   </div>
   } @else {
-  <p-table [value]="pessoas()" [loading]="carregando()" [paginator]="true" [rows]="10" dataKey="id">
+  <p-table [value]="pessoas()" [loading]="carregando()" [lazy]="true" (onLazyLoad)="paginar($event)"
+    [paginator]="true" [rows]="linhas" [first]="primeiro()" [totalRecords]="total()" dataKey="id">
     <ng-template #header>
       <tr>
         <th>Nome</th>

@@ -1,0 +1,141 @@
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Contas bancárias</h1>
+    @if (caso()?.situacao === 'ATIVO') {
+    <p-button label="Nova conta" icon="pi pi-plus" (onClick)="nova()" />
+    }
+  </header>
+
+  <p-select class="w-full md:max-w-xl" [options]="casos()" optionLabel="nome" optionValue="id"
+    [ngModel]="casoId()" (ngModelChange)="selecionarCaso($event)" placeholder="Selecione um caso" [filter]="true"
+    filterBy="nome" [showClear]="true" />
+
+  @if (caso()?.situacao === 'ENCERRADO') {
+  <p-message severity="info">Este caso está encerrado. Reabra o caso para alterar as contas.</p-message>
+  }
+
+  @if (!casoId()) {
+  <p-message severity="secondary">Selecione um caso para ver as contas bancárias.</p-message>
+  } @else if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar as contas bancárias agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="contas()" [loading]="carregando()" [lazy]="true" [lazyLoadOnInit]="false"
+    (onLazyLoad)="paginar($event)" [paginator]="true" [rows]="linhas" [first]="primeiro()"
+    [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Descrição</th>
+        <th>Banco</th>
+        <th>Tipo</th>
+        <th>Agência</th>
+        <th>Conta</th>
+        <th class="text-right">Saldo inicial</th>
+        <th>Data do saldo</th>
+        <th class="w-24"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-conta>
+      <tr>
+        <td>{{ conta.descricao ?? '-' }}</td>
+        <td>{{ nomeBanco(conta.banco) }}</td>
+        <td>{{ nomeTipo(conta.tipo) }}</td>
+        <td class="valor">{{ conta.agencia }}</td>
+        <td class="valor">{{ conta.numero }}</td>
+        <td class="valor text-right whitespace-nowrap">{{ conta.saldoInicial | moeda }}</td>
+        <td>{{ conta.dataSaldoInicial | date: 'dd/MM/yyyy' }}</td>
+        <td class="w-24 whitespace-nowrap text-right">
+          @if (caso()?.situacao === 'ATIVO') {
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(conta)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="excluir(conta)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">Nenhuma conta bancária cadastrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true"
+    [header]="editandoId() ? 'Editar conta bancária' : 'Nova conta bancária'" [style]="{ width: '40rem' }"
+    [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-8">
+        <label for="banco">Banco</label>
+        <p-select inputId="banco" formControlName="banco" [options]="bancos" optionLabel="label"
+          optionValue="value" [filter]="true" filterBy="label" placeholder="Selecione" appendTo="body" fluid />
+        @if (banco.invalid && banco.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione o banco.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="tipo">Tipo</label>
+        <p-select inputId="tipo" formControlName="tipo" [options]="tiposConta" optionLabel="label"
+          optionValue="value" appendTo="body" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="agencia">Agência</label>
+        <input pInputText id="agencia" formControlName="agencia" maxlength="10" placeholder="0000-0" fluid />
+        @if (agencia.invalid && agencia.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a agência (só números e dígito).</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-8">
+        <label for="numero">Número da conta</label>
+        <input pInputText id="numero" formControlName="numero" maxlength="20" placeholder="00000-0" fluid />
+        @if (numero.invalid && numero.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a conta (só números e dígito).</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="descricao">Descrição</label>
+        <input pInputText id="descricao" formControlName="descricao" maxlength="100"
+          placeholder="Ex.: Conta do benefício do INSS" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="saldoInicial">Saldo inicial</label>
+        <p-inputnumber inputId="saldoInicial" formControlName="saldoInicial" mode="currency" currency="BRL"
+          locale="pt-BR" [minFractionDigits]="2" [maxFractionDigits]="2" fluid />
+        @if (saldoInicial.invalid && saldoInicial.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o saldo inicial.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="dataSaldoInicial">Data do saldo</label>
+        <p-datepicker inputId="dataSaldoInicial" formControlName="dataSaldoInicial" dateFormat="dd/mm/yy"
+          [maxDate]="hoje" [showIcon]="true" appendTo="body" fluid />
+        @if (dataSaldoInicial.invalid && dataSaldoInicial.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a data do saldo.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

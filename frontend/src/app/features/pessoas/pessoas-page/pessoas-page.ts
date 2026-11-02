@@ -12,7 +12,7 @@ import { InputIcon } from 'primeng/inputicon';
 import { InputMask } from 'primeng/inputmask';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { TableModule } from 'primeng/table';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { Textarea } from 'primeng/textarea';
 import { Toast } from 'primeng/toast';
 import { PessoaApi, PessoaRequest, PessoaResponse } from '../pessoa-api';
@@ -20,6 +20,7 @@ import { criarPessoaForm } from '../pessoa.form';
 import { CpfPipe } from '../../../shared/pipes/cpf-pipe';
 import { formatLocalDate, parseLocalDate } from '../../../shared/util/data';
 import { mensagemDeErro } from '../../../shared/util/erro';
+import { inicioDaUltimaPagina, ITENS_POR_PAGINA } from '../../../shared/util/pagina';
 
 @Component({
   imports: [
@@ -49,6 +50,9 @@ export class PessoasPage {
   private readonly mensagens = inject(MessageService);
 
   readonly pessoas = signal<PessoaResponse[]>([]);
+  readonly total = signal(0);
+  readonly primeiro = signal(0);
+  readonly linhas = ITENS_POR_PAGINA;
   readonly carregando = signal(true);
   readonly erroLista = signal(false);
 
@@ -66,7 +70,6 @@ export class PessoasPage {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => clearTimeout(this.timerBusca));
-    void this.carregar();
   }
 
   get nome() {
@@ -83,9 +86,17 @@ export class PessoasPage {
     this.erroLista.set(false);
 
     try {
-      const pessoas = await firstValueFrom(this.api.listar(this.busca));
+      const pagina = await firstValueFrom(
+        this.api.listar(this.busca, this.primeiro() / this.linhas, this.linhas),
+      );
       if (requisicao === this.ultimaRequisicao) {
-        this.pessoas.set(pessoas);
+        if (pagina.itens.length === 0 && this.primeiro() > 0) {
+          this.primeiro.set(inicioDaUltimaPagina(pagina.total, this.linhas));
+          void this.carregar();
+          return;
+        }
+        this.pessoas.set(pagina.itens);
+        this.total.set(pagina.total);
       }
     } catch (e) {
       if (requisicao === this.ultimaRequisicao) {
@@ -99,10 +110,16 @@ export class PessoasPage {
     }
   }
 
+  paginar(evento: TableLazyLoadEvent): void {
+    this.primeiro.set(evento.first ?? 0);
+    void this.carregar();
+  }
+
   buscar(valor: string): void {
     clearTimeout(this.timerBusca);
     this.timerBusca = setTimeout(() => {
       this.busca = valor;
+      this.primeiro.set(0);
       void this.carregar();
     }, 300);
   }
