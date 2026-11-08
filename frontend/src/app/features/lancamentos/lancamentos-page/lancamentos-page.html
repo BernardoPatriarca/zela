@@ -1,1 +1,212 @@
-<h1>Lançamentos</h1>
+<section class="flex flex-col gap-4">
+  <p-toast />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Lançamentos</h1>
+    @if (caso()?.situacao === 'ATIVO') {
+    <p-button label="Novo lançamento" icon="pi pi-plus" (onClick)="nova()" />
+    }
+  </header>
+
+  <p-select class="w-full md:max-w-xl" [options]="casos()" optionLabel="nome" optionValue="id"
+    [ngModel]="casoId()" (ngModelChange)="selecionarCaso($event)" placeholder="Selecione um caso" [filter]="true"
+    filterBy="nome" [showClear]="true" />
+
+  @if (caso()?.situacao === 'ENCERRADO') {
+  <p-message severity="info">Este caso está encerrado. Reabra o caso para alterar os lançamentos.</p-message>
+  }
+
+  @if (!casoId()) {
+  <p-message severity="secondary">Selecione um caso para ver os lançamentos.</p-message>
+  } @else if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar os lançamentos agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="tentarNovamente()" />
+  </div>
+  } @else {
+  <div class="flex flex-wrap gap-3">
+    <p-datepicker class="w-full md:w-64" selectionMode="range" [ngModel]="periodo"
+      (ngModelChange)="filtrarPorPeriodo($event)" dateFormat="dd/mm/yy" placeholder="Período" [showIcon]="true"
+      [showClear]="true" [readonlyInput]="true" appendTo="body" fluid />
+
+    <p-select class="w-full md:w-64" [options]="contas()" optionLabel="nome" optionValue="id"
+      [(ngModel)]="filtro.contaBancariaId" (onChange)="filtrar()" placeholder="Todas as contas"
+      [showClear]="true" />
+
+    <p-select class="w-full md:w-40" [options]="tipos" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.tipo" (onChange)="filtrarPorTipo()" placeholder="Todos os tipos" [showClear]="true" />
+
+    <p-select class="w-full md:w-64" [options]="categoriasFiltro()" optionLabel="nome" optionValue="id"
+      [(ngModel)]="filtro.categoriaId" (onChange)="filtrar()" placeholder="Todas as categorias"
+      [disabled]="!filtro.tipo" [filter]="true" filterBy="nome" [showClear]="true" />
+
+    <p-select class="w-full md:w-40" [options]="situacoes" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
+  </div>
+
+  <p-table [value]="lancamentos()" [loading]="carregando()" [lazy]="true" [lazyLoadOnInit]="false"
+    (onLazyLoad)="paginar($event)" [paginator]="true" [rows]="linhas" [first]="primeiro()"
+    [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Conta</th>
+        <th>Categoria</th>
+        <th class="w-28">Tipo</th>
+        <th class="text-right">Valor</th>
+        <th class="w-32">Situação</th>
+        <th class="w-24"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-lancamento>
+      <tr>
+        <td class="whitespace-nowrap">{{ lancamento.dataLancamento | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ lancamento.descricao }}</td>
+        <td>{{ nomeConta(lancamento.contaBancariaId) }}</td>
+        <td>{{ lancamento.categoriaNome }}</td>
+        <td>
+          <p-tag [value]="nomeTipo(lancamento.tipo)"
+            [severity]="lancamento.tipo === 'RECEITA' ? 'success' : 'warn'" />
+        </td>
+        <td class="valor text-right whitespace-nowrap"
+          [class]="lancamento.tipo === 'DESPESA' ? 'text-[var(--zela-danger)]' : ''">
+          {{ (lancamento.tipo === 'DESPESA' ? -lancamento.valor : lancamento.valor) | moeda }}
+        </td>
+        <td>
+          @if (lancamento.situacao === 'CONCILIADO') {
+          <p-tag value="Conciliado" severity="success" />
+          } @else {
+          <p-tag value="Pendente" severity="secondary" />
+          }
+        </td>
+        <td class="w-24 whitespace-nowrap text-right">
+          @if (caso()?.situacao === 'ATIVO') {
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(lancamento)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="abrirExclusao(lancamento)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">Nenhum lançamento encontrado.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true"
+    [header]="editandoId() ? 'Editar lançamento' : 'Novo lançamento'" [style]="{ width: '40rem' }"
+    [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="tipo">Tipo</label>
+        <p-select inputId="tipo" formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value"
+          (onChange)="trocarTipo($event.value)" appendTo="body" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="dataLancamento">Data</label>
+        <p-datepicker inputId="dataLancamento" formControlName="dataLancamento" dateFormat="dd/mm/yy"
+          [maxDate]="hoje" [showIcon]="true" appendTo="body" fluid />
+        @if (dataLancamento.invalid && dataLancamento.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a data do lançamento.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="valor">Valor</label>
+        <p-inputnumber inputId="valor" formControlName="valor" mode="currency" currency="BRL" locale="pt-BR"
+          [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" fluid />
+        @if (valor.invalid && valor.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe um valor maior que zero.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="contaBancariaId">Conta bancária</label>
+        <p-select inputId="contaBancariaId" formControlName="contaBancariaId" [options]="contas()"
+          optionLabel="nome" optionValue="id" placeholder="Selecione" appendTo="body" fluid />
+        @if (contaBancariaId.invalid && contaBancariaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a conta bancária.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-6">
+        <label for="categoriaId">Categoria</label>
+        <p-select inputId="categoriaId" formControlName="categoriaId" [options]="categoriasForm()"
+          optionLabel="nome" optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione"
+          appendTo="body" fluid />
+        @if (categoriaId.invalid && categoriaId.touched) {
+        <p-message severity="error" variant="simple" size="small">Selecione a categoria.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="descricao">Descrição</label>
+        <input pInputText id="descricao" formControlName="descricao" maxlength="255"
+          placeholder="Ex.: Mensalidade da clínica" fluid />
+        @if (descricao.invalid && descricao.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a descrição.</p-message>
+        }
+      </div>
+
+      @if (editandoId()) {
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="justificativa">Justificativa da alteração</label>
+        <textarea pTextarea id="justificativa" formControlName="justificativa" rows="3" maxlength="500"
+          placeholder="Explique o motivo da alteração. Ela fica registrada no histórico." fluid></textarea>
+        @if (justificativa.invalid && justificativa.touched) {
+        <p-message severity="error" variant="simple" size="small">
+          Informe a justificativa (mínimo de 10 caracteres).
+        </p-message>
+        }
+      </div>
+      }
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog [visible]="lancamentoExcluindo() !== null" (visibleChange)="fecharExclusao()" [modal]="true"
+    header="Excluir lançamento" [style]="{ width: '32rem' }" [breakpoints]="{ '640px': '95vw' }">
+    <div class="flex flex-col gap-4">
+      @if (erroExclusao(); as mensagem) {
+      <p-message severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <p>
+        Deseja excluir o lançamento <strong>{{ lancamentoExcluindo()?.descricao }}</strong>? Ele deixará de
+        aparecer na lista, mas o histórico continua registrado.
+      </p>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="justificativaExclusao">Justificativa da exclusão</label>
+        <textarea pTextarea id="justificativaExclusao" [formControl]="justificativaExclusao" rows="3"
+          maxlength="500" placeholder="Explique o motivo da exclusão." fluid></textarea>
+        @if (justificativaExclusao.invalid && justificativaExclusao.touched) {
+        <p-message severity="error" variant="simple" size="small">
+          Informe a justificativa (mínimo de 10 caracteres).
+        </p-message>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="fecharExclusao()" />
+        <p-button label="Excluir" severity="danger" [loading]="excluindo()" (onClick)="excluir()" />
+      </div>
+    </div>
+  </p-dialog>
+</section>

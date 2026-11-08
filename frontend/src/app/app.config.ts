@@ -19,6 +19,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAppInitializer(() => inject(AuthService).iniciar()),
     providePrimeNG({
+      translation: {
+        emptyMessage: 'Nenhum resultado encontrado',
+        emptyFilterMessage: 'Nenhum resultado encontrado',
+      },
       theme: {
         preset: ZelaPreset,
         options: { darkModeSelector: '.app-dark' },

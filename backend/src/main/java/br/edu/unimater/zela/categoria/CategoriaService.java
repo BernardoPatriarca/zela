@@ -3,6 +3,7 @@ package br.edu.unimater.zela.categoria;
 import br.edu.unimater.zela.categoria.dto.CategoriaCreateDto;
 import br.edu.unimater.zela.categoria.dto.CategoriaResponseDto;
 import br.edu.unimater.zela.categoria.dto.CategoriaUpdateDto;
+import br.edu.unimater.zela.lancamento.LancamentoRepository;
 import br.edu.unimater.zela.shared.dto.OpcaoDto;
 import br.edu.unimater.zela.shared.dto.Pagina;
 import br.edu.unimater.zela.shared.exception.BusinessRuleException;
@@ -23,6 +24,9 @@ public class CategoriaService {
 
     @Inject
     CategoriaRepository repository;
+
+    @Inject
+    LancamentoRepository lancamentoRepository;
 
     @Inject
     UsuarioService usuarioService;
@@ -72,6 +76,9 @@ public class CategoriaService {
     @Transactional
     public void excluir(UUID id) {
         Categoria categoria = buscarEditavel(id);
+        if (lancamentoRepository.existePorCategoria(id)) {
+            throw new BusinessRuleException("Esta categoria está vinculada a lançamentos e não pode ser excluída.");
+        }
         categoria.excluidoEm = Instant.now();
     }
 
