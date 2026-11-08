@@ -52,6 +52,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'categorias',
+        title: 'Categorias',
+        loadComponent: () =>
+          import('./features/categorias/categorias-page/categorias-page').then(
+            (m) => m.CategoriasPage,
+          ),
+      },
+      {
         path: 'lancamentos',
         title: 'Lançamentos',
         loadComponent: () =>

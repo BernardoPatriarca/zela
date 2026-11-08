@@ -15,6 +15,7 @@ export class Sidebar {
     { label: 'Pessoas', icon: 'pi pi-users', rota: '/pessoas' },
     { label: 'Casos', icon: 'pi pi-briefcase', rota: '/casos' },
     { label: 'Contas bancárias', icon: 'pi pi-credit-card', rota: '/contas-bancarias' },
+    { label: 'Categorias', icon: 'pi pi-tags', rota: '/categorias' },
     { label: 'Lançamentos', icon: 'pi pi-wallet', rota: '/lancamentos' },
     { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
     { label: 'Relatórios', icon: 'pi pi-file-pdf', rota: '/relatorios' },
