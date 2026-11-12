@@ -68,6 +68,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'importacoes-extrato',
+        title: 'Importar extrato',
+        loadComponent: () =>
+          import('./features/importacoes-extrato/importacoes-extrato-page/importacoes-extrato-page').then(
+            (m) => m.ImportacoesExtratoPage,
+          ),
+      },
+      {
         path: 'conciliacao',
         title: 'Conciliação',
         loadComponent: () =>

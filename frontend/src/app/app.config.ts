@@ -22,6 +22,7 @@ export const appConfig: ApplicationConfig = {
       translation: {
         emptyMessage: 'Nenhum resultado encontrado',
         emptyFilterMessage: 'Nenhum resultado encontrado',
+        noFileChosenMessage: 'Nenhum arquivo selecionado',
       },
       theme: {
         preset: ZelaPreset,

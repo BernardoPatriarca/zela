@@ -5,6 +5,7 @@ import br.edu.unimater.zela.caso.CasoRepository;
 import br.edu.unimater.zela.contabancaria.dto.ContaBancariaCreateDto;
 import br.edu.unimater.zela.contabancaria.dto.ContaBancariaResponseDto;
 import br.edu.unimater.zela.contabancaria.dto.ContaBancariaUpdateDto;
+import br.edu.unimater.zela.importacaoextrato.ImportacaoExtratoRepository;
 import br.edu.unimater.zela.lancamento.LancamentoRepository;
 import br.edu.unimater.zela.shared.dto.Pagina;
 import br.edu.unimater.zela.shared.exception.BusinessRuleException;
@@ -30,6 +31,9 @@ public class ContaBancariaService {
 
     @Inject
     LancamentoRepository lancamentoRepository;
+
+    @Inject
+    ImportacaoExtratoRepository importacaoExtratoRepository;
 
     @Inject
     JsonWebToken jwt;
@@ -89,6 +93,9 @@ public class ContaBancariaService {
         ContaBancaria conta = buscar(buscarCasoEditavel(casoId), id);
         if (lancamentoRepository.existePorContaBancaria(id)) {
             throw new BusinessRuleException("Esta conta bancária está vinculada a lançamentos e não pode ser excluída.");
+        }
+        if (importacaoExtratoRepository.existePorContaBancaria(id)) {
+            throw new BusinessRuleException("Esta conta bancária possui extratos importados e não pode ser excluída.");
         }
         conta.excluidoEm = Instant.now();
     }

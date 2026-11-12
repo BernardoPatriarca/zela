@@ -14,14 +14,14 @@
         (input)="buscar(campoBusca.value)" fluid />
     </p-iconfield>
 
-    <p-select class="w-full md:w-40" [options]="tipos" optionLabel="label" optionValue="value"
+    <p-select class="w-full md:w-46" [options]="tipos" optionLabel="label" optionValue="value"
       [(ngModel)]="filtro.tipo" (onChange)="filtrar()" placeholder="Todos os tipos" [showClear]="true" />
 
-    <p-select class="w-full md:w-64" [options]="comarcas()" optionLabel="nome" optionValue="id"
+    <p-select class="w-full md:w-60" [options]="comarcas()" optionLabel="nome" optionValue="id"
       [(ngModel)]="filtro.comarcaId" (onChange)="filtrar()" placeholder="Todas as comarcas" [filter]="true"
       filterBy="nome" [showClear]="true" />
 
-    <p-select class="w-full md:w-40" [options]="situacoes" optionLabel="label" optionValue="value"
+    <p-select class="w-full md:w-56" [options]="situacoes" optionLabel="label" optionValue="value"
       [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
   </div>
 

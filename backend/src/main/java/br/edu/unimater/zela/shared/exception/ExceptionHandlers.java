@@ -28,7 +28,7 @@ public class ExceptionHandlers {
 
     @ServerExceptionMapper
     public RestResponse<ErrorResponse> businessRule(BusinessRuleException e) {
-        return build(422, e.getMessage(), null);
+        return build(422, e.getMessage(), e.getCampos());
     }
 
     @ServerExceptionMapper

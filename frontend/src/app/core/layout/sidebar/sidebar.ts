@@ -17,6 +17,7 @@ export class Sidebar {
     { label: 'Contas bancárias', icon: 'pi pi-credit-card', rota: '/contas-bancarias' },
     { label: 'Categorias', icon: 'pi pi-tags', rota: '/categorias' },
     { label: 'Lançamentos', icon: 'pi pi-wallet', rota: '/lancamentos' },
+    { label: 'Importar extrato', icon: 'pi pi-upload', rota: '/importacoes-extrato' },
     { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
     { label: 'Relatórios', icon: 'pi pi-file-pdf', rota: '/relatorios' },
     { label: 'Prazos', icon: 'pi pi-calendar', rota: '/prazos' },

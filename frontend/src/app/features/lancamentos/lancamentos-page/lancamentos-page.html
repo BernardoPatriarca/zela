@@ -31,18 +31,18 @@
       (ngModelChange)="filtrarPorPeriodo($event)" dateFormat="dd/mm/yy" placeholder="Período" [showIcon]="true"
       [showClear]="true" [readonlyInput]="true" appendTo="body" fluid />
 
-    <p-select class="w-full md:w-64" [options]="contas()" optionLabel="nome" optionValue="id"
+    <p-select class="w-full md:w-68" [options]="contas()" optionLabel="nome" optionValue="id"
       [(ngModel)]="filtro.contaBancariaId" (onChange)="filtrar()" placeholder="Todas as contas"
       [showClear]="true" />
 
-    <p-select class="w-full md:w-40" [options]="tipos" optionLabel="label" optionValue="value"
+    <p-select class="w-full md:w-46" [options]="tipos" optionLabel="label" optionValue="value"
       [(ngModel)]="filtro.tipo" (onChange)="filtrarPorTipo()" placeholder="Todos os tipos" [showClear]="true" />
 
     <p-select class="w-full md:w-64" [options]="categoriasFiltro()" optionLabel="nome" optionValue="id"
       [(ngModel)]="filtro.categoriaId" (onChange)="filtrar()" placeholder="Todas as categorias"
       [disabled]="!filtro.tipo" [filter]="true" filterBy="nome" [showClear]="true" />
 
-    <p-select class="w-full md:w-40" [options]="situacoes" optionLabel="label" optionValue="value"
+    <p-select class="w-full md:w-56" [options]="situacoes" optionLabel="label" optionValue="value"
       [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
   </div>
 
