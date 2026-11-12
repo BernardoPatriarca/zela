@@ -15,13 +15,13 @@ import { Select } from 'primeng/select';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { Toast } from 'primeng/toast';
 import {
-  Banco,
   ContaBancariaApi,
   ContaBancariaRequest,
   ContaBancariaResponse,
   TipoConta,
 } from '../conta-bancaria-api';
-import { BANCOS, criarContaBancariaForm, TIPOS_CONTA } from '../conta-bancaria.form';
+import { criarContaBancariaForm, TIPOS_CONTA } from '../conta-bancaria.form';
+import { BancoApi } from '../../bancos/banco-api';
 import { CasoApi, CasoResponse } from '../../casos/caso-api';
 import { MoedaPipe } from '../../../shared/pipes/moeda-pipe';
 import { formatLocalDate, parseLocalDate } from '../../../shared/util/data';
@@ -51,6 +51,7 @@ import { inicioDaUltimaPagina, ITENS_POR_PAGINA, Opcao } from '../../../shared/u
 })
 export class ContasBancariasPage {
   private readonly api = inject(ContaBancariaApi);
+  private readonly bancoApi = inject(BancoApi);
   private readonly casoApi = inject(CasoApi);
   private readonly router = inject(Router);
   private readonly rota = inject(ActivatedRoute);
@@ -60,6 +61,7 @@ export class ContasBancariasPage {
   readonly casoId = input<string>();
 
   readonly casos = signal<Opcao[]>([]);
+  readonly bancos = signal<Opcao[]>([]);
   readonly caso = signal<CasoResponse | null>(null);
   readonly contas = signal<ContaBancariaResponse[]>([]);
   readonly total = signal(0);
@@ -73,7 +75,6 @@ export class ContasBancariasPage {
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
 
-  readonly bancos = BANCOS;
   readonly tiposConta = TIPOS_CONTA;
   readonly hoje = new Date();
   readonly form = criarContaBancariaForm();
@@ -82,6 +83,7 @@ export class ContasBancariasPage {
 
   constructor() {
     void this.carregarCasos();
+    void this.carregarBancos();
     effect(() => {
       const casoId = this.casoId();
       untracked(() => {
@@ -96,8 +98,8 @@ export class ContasBancariasPage {
     });
   }
 
-  get banco() {
-    return this.form.controls.banco;
+  get bancoId() {
+    return this.form.controls.bancoId;
   }
 
   get agencia() {
@@ -161,6 +163,14 @@ export class ContasBancariasPage {
     }
   }
 
+  async carregarBancos(): Promise<void> {
+    try {
+      this.bancos.set(await firstValueFrom(this.bancoApi.listarOpcoes()));
+    } catch (e) {
+      console.error('[contas-bancarias] falha ao carregar os bancos', e);
+    }
+  }
+
   selecionarCaso(casoId: string | null): void {
     void this.router.navigate([], { relativeTo: this.rota, queryParams: { casoId } });
   }
@@ -168,10 +178,6 @@ export class ContasBancariasPage {
   paginar(evento: TableLazyLoadEvent): void {
     this.primeiro.set(evento.first ?? 0);
     void this.carregar();
-  }
-
-  nomeBanco(banco: Banco): string {
-    return this.bancos.find((opcao) => opcao.value === banco)?.label ?? banco;
   }
 
   nomeTipo(tipo: TipoConta): string {
@@ -182,7 +188,7 @@ export class ContasBancariasPage {
     this.editandoId.set(null);
     this.erro.set(null);
     this.form.reset({
-      banco: null,
+      bancoId: null,
       tipo: 'CORRENTE',
       agencia: '',
       numero: '',
@@ -197,7 +203,7 @@ export class ContasBancariasPage {
     this.editandoId.set(conta.id);
     this.erro.set(null);
     this.form.reset({
-      banco: conta.banco,
+      bancoId: conta.bancoId,
       tipo: conta.tipo,
       agencia: conta.agencia,
       numero: conta.numero,
@@ -220,7 +226,7 @@ export class ContasBancariasPage {
 
     const valores = this.form.getRawValue();
     const conta: ContaBancariaRequest = {
-      banco: valores.banco!,
+      bancoId: valores.bancoId!,
       tipo: valores.tipo,
       agencia: valores.agencia.trim(),
       numero: valores.numero.trim(),

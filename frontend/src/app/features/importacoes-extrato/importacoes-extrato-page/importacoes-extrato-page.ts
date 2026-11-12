@@ -22,7 +22,6 @@ import {
 } from '../importacao-extrato-api';
 import { CasoApi, CasoResponse } from '../../casos/caso-api';
 import { ContaBancariaApi } from '../../contas-bancarias/conta-bancaria-api';
-import { BANCOS } from '../../contas-bancarias/conta-bancaria.form';
 import { MoedaPipe } from '../../../shared/pipes/moeda-pipe';
 import { formatLocalDate } from '../../../shared/util/data';
 import { mensagemDeErro } from '../../../shared/util/erro';
@@ -137,7 +136,7 @@ export class ImportacoesExtratoPage {
       this.contas.set(
         contas.itens.map((conta) => ({
           id: conta.id,
-          nome: `${this.nomeBanco(conta.banco)} · ${conta.agencia} / ${conta.numero}`,
+          nome: `${conta.bancoCodigo} - ${conta.bancoNome} · ${conta.agencia} / ${conta.numero}`,
         })),
       );
       this.aplicarPeriodoPadrao();
@@ -321,10 +320,6 @@ export class ImportacoesExtratoPage {
     } finally {
       this.excluindo.set(false);
     }
-  }
-
-  private nomeBanco(banco: string): string {
-    return BANCOS.find((opcao) => opcao.value === banco)?.label ?? banco;
   }
 
   private aplicarPeriodoPadrao(): void {

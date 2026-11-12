@@ -1,6 +1,5 @@
 package br.edu.unimater.zela.contabancaria.dto;
 
-import br.edu.unimater.zela.contabancaria.Banco;
 import br.edu.unimater.zela.contabancaria.TipoConta;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -11,10 +10,11 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record ContaBancariaUpdateDto(
         @NotNull(message = "O banco é obrigatório.")
-        Banco banco,
+        UUID bancoId,
 
         @NotNull(message = "O tipo de conta é obrigatório.")
         TipoConta tipo,

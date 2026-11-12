@@ -20,7 +20,6 @@ import { criarLancamentoForm, SITUACOES_LANCAMENTO, TIPOS_LANCAMENTO } from '../
 import { CasoApi, CasoResponse } from '../../casos/caso-api';
 import { CategoriaApi, TipoCategoria } from '../../categorias/categoria-api';
 import { ContaBancariaApi } from '../../contas-bancarias/conta-bancaria-api';
-import { BANCOS } from '../../contas-bancarias/conta-bancaria.form';
 import { MoedaPipe } from '../../../shared/pipes/moeda-pipe';
 import { formatLocalDate, parseLocalDate } from '../../../shared/util/data';
 import { mensagemDeErro } from '../../../shared/util/erro';
@@ -159,7 +158,7 @@ export class LancamentosPage {
       this.contas.set(
         contas.itens.map((conta) => ({
           id: conta.id,
-          nome: `${this.nomeBanco(conta.banco)} · ${conta.agencia} / ${conta.numero}`,
+          nome: `${conta.bancoCodigo} - ${conta.bancoNome} · ${conta.agencia} / ${conta.numero}`,
         })),
       );
       this.aplicarPeriodoPadrao(caso);
@@ -408,10 +407,6 @@ export class LancamentosPage {
       console.error('[lancamentos] falha ao carregar as categorias', e);
       return [];
     }
-  }
-
-  private nomeBanco(banco: string): string {
-    return BANCOS.find((opcao) => opcao.value === banco)?.label ?? banco;
   }
 
   private aplicarPeriodoPadrao(caso: CasoResponse): void {

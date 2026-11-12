@@ -4,28 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../shared/util/pagina';
 
-export type Banco =
-  | 'BANCO_DO_BRASIL'
-  | 'BANRISUL'
-  | 'BRADESCO'
-  | 'C6'
-  | 'CAIXA'
-  | 'CRESOL'
-  | 'INTER'
-  | 'ITAU'
-  | 'MERCADO_PAGO'
-  | 'NUBANK'
-  | 'SANTANDER'
-  | 'SICOOB'
-  | 'SICREDI'
-  | 'OUTRO';
-
 export type TipoConta = 'CORRENTE' | 'POUPANCA' | 'PAGAMENTO';
 
 export interface ContaBancariaResponse {
   id: string;
   casoId: string;
-  banco: Banco;
+  bancoId: string;
+  bancoCodigo: string;
+  bancoNome: string;
   tipo: TipoConta;
   agencia: string;
   numero: string;
@@ -34,7 +20,10 @@ export interface ContaBancariaResponse {
   dataSaldoInicial: string;
 }
 
-export type ContaBancariaRequest = Omit<ContaBancariaResponse, 'id' | 'casoId'>;
+export type ContaBancariaRequest = Omit<
+  ContaBancariaResponse,
+  'id' | 'casoId' | 'bancoCodigo' | 'bancoNome'
+>;
 
 @Injectable({ providedIn: 'root' })
 export class ContaBancariaApi {

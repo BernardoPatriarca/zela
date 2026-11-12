@@ -24,5 +24,6 @@ export class Sidebar {
     { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' },
     { label: 'Comarcas', icon: 'pi pi-building-columns', rota: '/comarcas' },
     { label: 'Varas', icon: 'pi pi-sitemap', rota: '/varas' },
+    { label: 'Bancos', icon: 'pi pi-building', rota: '/bancos' },
   ];
 }

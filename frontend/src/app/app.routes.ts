@@ -115,6 +115,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/varas/varas-page/varas-page').then((m) => m.VarasPage),
       },
+      {
+        path: 'bancos',
+        title: 'Bancos',
+        loadComponent: () =>
+          import('./features/bancos/bancos-page/bancos-page').then((m) => m.BancosPage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

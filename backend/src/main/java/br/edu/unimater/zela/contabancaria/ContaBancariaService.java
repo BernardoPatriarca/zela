@@ -1,5 +1,7 @@
 package br.edu.unimater.zela.contabancaria;
 
+import br.edu.unimater.zela.banco.Banco;
+import br.edu.unimater.zela.banco.BancoRepository;
 import br.edu.unimater.zela.caso.Caso;
 import br.edu.unimater.zela.caso.CasoRepository;
 import br.edu.unimater.zela.contabancaria.dto.ContaBancariaCreateDto;
@@ -27,6 +29,9 @@ public class ContaBancariaService {
     ContaBancariaRepository repository;
 
     @Inject
+    BancoRepository bancoRepository;
+
+    @Inject
     CasoRepository casoRepository;
 
     @Inject
@@ -50,13 +55,14 @@ public class ContaBancariaService {
     @Transactional
     public ContaBancariaResponseDto criar(UUID casoId, ContaBancariaCreateDto dto) {
         Caso caso = buscarCasoEditavel(casoId);
+        Banco banco = buscarBanco(dto.bancoId());
         String agencia = dto.agencia().trim().toUpperCase();
         String numero = dto.numero().trim().toUpperCase();
-        validarContaDisponivel(caso.id, dto.banco(), agencia, numero, null);
+        validarContaDisponivel(caso.id, banco.id, agencia, numero, null);
 
         ContaBancaria conta = new ContaBancaria();
         conta.casoId = caso.id;
-        conta.banco = dto.banco();
+        conta.banco = banco;
         conta.tipo = dto.tipo();
         conta.agencia = agencia;
         conta.numero = numero;
@@ -72,11 +78,12 @@ public class ContaBancariaService {
     public ContaBancariaResponseDto atualizar(UUID casoId, UUID id, ContaBancariaUpdateDto dto) {
         Caso caso = buscarCasoEditavel(casoId);
         ContaBancaria conta = buscar(caso, id);
+        Banco banco = buscarBanco(dto.bancoId());
         String agencia = dto.agencia().trim().toUpperCase();
         String numero = dto.numero().trim().toUpperCase();
-        validarContaDisponivel(caso.id, dto.banco(), agencia, numero, id);
+        validarContaDisponivel(caso.id, banco.id, agencia, numero, id);
 
-        conta.banco = dto.banco();
+        conta.banco = banco;
         conta.tipo = dto.tipo();
         conta.agencia = agencia;
         conta.numero = numero;
@@ -118,8 +125,13 @@ public class ContaBancariaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Conta bancária não encontrada."));
     }
 
-    private void validarContaDisponivel(UUID casoId, Banco banco, String agencia, String numero, UUID idAtual) {
-        repository.buscarPorNumero(casoId, banco, agencia, numero)
+    private Banco buscarBanco(UUID bancoId) {
+        return bancoRepository.buscarPorId(bancoId, usuarioLogado())
+                .orElseThrow(() -> new BusinessRuleException("Banco não encontrado."));
+    }
+
+    private void validarContaDisponivel(UUID casoId, UUID bancoId, String agencia, String numero, UUID idAtual) {
+        repository.buscarPorNumero(casoId, bancoId, agencia, numero)
                 .filter(outra -> !outra.id.equals(idAtual))
                 .ifPresent(outra -> {
                     throw new ConflictException("Conta bancária já cadastrada neste caso.");

@@ -1,0 +1,91 @@
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Bancos</h1>
+    <p-button label="Novo banco" icon="pi pi-plus" (onClick)="novo()" />
+  </header>
+
+  <p-iconfield class="max-w-sm">
+    <p-inputicon class="pi pi-search" />
+    <input pInputText #campoBusca placeholder="Buscar por código ou nome" (input)="buscar(campoBusca.value)" fluid />
+  </p-iconfield>
+
+  @if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar os bancos agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="bancos()" [loading]="carregando()" [lazy]="true" (onLazyLoad)="paginar($event)"
+    [paginator]="true" [rows]="linhas" [first]="primeiro()" [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th class="w-28">Código</th>
+        <th>Nome</th>
+        <th class="w-32">Origem</th>
+        <th class="w-24"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-banco>
+      <tr>
+        <td class="valor">{{ banco.codigo }}</td>
+        <td>{{ banco.nome }}</td>
+        <td>
+          @if (banco.sistema) {
+          <p-tag value="Sistema" severity="secondary" />
+          } @else {
+          <p-tag value="Meu" />
+          }
+        </td>
+        <td class="w-24 whitespace-nowrap text-right">
+          @if (!banco.sistema) {
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" ariaLabel="Editar"
+            (onClick)="editar(banco)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Excluir"
+            (onClick)="excluir(banco)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">Nenhum banco encontrado.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog [(visible)]="dialogAberto" [modal]="true" [header]="editandoId() ? 'Editar banco' : 'Novo banco'"
+    [style]="{ width: '32rem' }" [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (erro(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+        <label for="codigo">Código</label>
+        <input pInputText id="codigo" formControlName="codigo" maxlength="3" placeholder="000" fluid />
+        @if (codigo.invalid && codigo.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o código com 3 dígitos.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-8">
+        <label for="nome">Nome</label>
+        <input pInputText id="nome" formControlName="nome" maxlength="100" fluid />
+        @if (nome.invalid && nome.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o nome.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogAberto.set(false)" />
+        <p-button type="submit" label="Salvar" [loading]="salvando()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

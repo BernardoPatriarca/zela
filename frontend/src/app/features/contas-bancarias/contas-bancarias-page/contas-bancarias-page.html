@@ -45,7 +45,7 @@
     <ng-template #body let-conta>
       <tr>
         <td>{{ conta.descricao ?? '-' }}</td>
-        <td>{{ nomeBanco(conta.banco) }}</td>
+        <td>{{ conta.bancoCodigo }} - {{ conta.bancoNome }}</td>
         <td>{{ nomeTipo(conta.tipo) }}</td>
         <td class="valor">{{ conta.agencia }}</td>
         <td class="valor">{{ conta.numero }}</td>
@@ -79,9 +79,9 @@
 
       <div class="col-span-12 flex flex-col gap-1.5 md:col-span-8">
         <label for="banco">Banco</label>
-        <p-select inputId="banco" formControlName="banco" [options]="bancos" optionLabel="label"
-          optionValue="value" [filter]="true" filterBy="label" placeholder="Selecione" appendTo="body" fluid />
-        @if (banco.invalid && banco.touched) {
+        <p-select inputId="banco" formControlName="bancoId" [options]="bancos()" optionLabel="nome"
+          optionValue="id" [filter]="true" filterBy="nome" placeholder="Selecione" appendTo="body" fluid />
+        @if (bancoId.invalid && bancoId.touched) {
         <p-message severity="error" variant="simple" size="small">Selecione o banco.</p-message>
         }
       </div>

@@ -1,6 +1,5 @@
 package br.edu.unimater.zela.contabancaria.dto;
 
-import br.edu.unimater.zela.contabancaria.Banco;
 import br.edu.unimater.zela.contabancaria.ContaBancaria;
 import br.edu.unimater.zela.contabancaria.TipoConta;
 
@@ -12,7 +11,9 @@ import java.util.UUID;
 public record ContaBancariaResponseDto(
         UUID id,
         UUID casoId,
-        Banco banco,
+        UUID bancoId,
+        String bancoCodigo,
+        String bancoNome,
         TipoConta tipo,
         String agencia,
         String numero,
@@ -26,7 +27,9 @@ public record ContaBancariaResponseDto(
         return new ContaBancariaResponseDto(
                 conta.id,
                 conta.casoId,
-                conta.banco,
+                conta.banco.id,
+                conta.banco.codigo,
+                conta.banco.nome,
                 conta.tipo,
                 conta.agencia,
                 conta.numero,

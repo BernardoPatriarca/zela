@@ -1,5 +1,6 @@
 package br.edu.unimater.zela.contabancaria;
 
+import br.edu.unimater.zela.banco.Banco;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -22,8 +23,8 @@ public class ContaBancaria {
     @Column(name = "caso_id", nullable = false, updatable = false)
     public UUID casoId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "banco_id", nullable = false)
     public Banco banco;
 
     @Enumerated(EnumType.STRING)
