@@ -72,6 +72,7 @@ export class LancamentosPage {
 
   readonly dialogAberto = signal(false);
   readonly editandoId = signal<string | null>(null);
+  readonly editandoConciliado = signal(false);
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
 
@@ -282,6 +283,7 @@ export class LancamentosPage {
 
   nova(): void {
     this.editandoId.set(null);
+    this.editandoConciliado.set(false);
     this.erro.set(null);
     this.categoriasForm.set([]);
     this.form.reset({
@@ -294,6 +296,9 @@ export class LancamentosPage {
       justificativa: '',
     });
     this.form.controls.tipo.enable();
+    this.form.controls.dataLancamento.enable();
+    this.form.controls.valor.enable();
+    this.form.controls.contaBancariaId.enable();
     this.form.controls.justificativa.disable();
     void this.carregarCategoriasForm('DESPESA');
     this.dialogAberto.set(true);
@@ -301,6 +306,7 @@ export class LancamentosPage {
 
   editar(lancamento: LancamentoResponse): void {
     this.editandoId.set(lancamento.id);
+    this.editandoConciliado.set(lancamento.situacao === 'CONCILIADO');
     this.erro.set(null);
     this.categoriasForm.set([]);
     this.form.reset({
@@ -314,6 +320,15 @@ export class LancamentosPage {
     });
     this.form.controls.tipo.disable();
     this.form.controls.justificativa.enable();
+    if (lancamento.situacao === 'CONCILIADO') {
+      this.form.controls.dataLancamento.disable();
+      this.form.controls.valor.disable();
+      this.form.controls.contaBancariaId.disable();
+    } else {
+      this.form.controls.dataLancamento.enable();
+      this.form.controls.valor.enable();
+      this.form.controls.contaBancariaId.enable();
+    }
     void this.carregarCategoriasForm(lancamento.tipo);
     this.dialogAberto.set(true);
   }

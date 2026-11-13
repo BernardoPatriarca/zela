@@ -108,6 +108,12 @@
       <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
       }
 
+      @if (editandoConciliado()) {
+      <p-message class="col-span-12" severity="info">
+        Este lançamento está conciliado com o extrato. Só a descrição e a categoria podem ser alteradas.
+      </p-message>
+      }
+
       <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
         <label for="tipo">Tipo</label>
         <p-select inputId="tipo" formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value"

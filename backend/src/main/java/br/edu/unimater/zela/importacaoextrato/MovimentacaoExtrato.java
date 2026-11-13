@@ -59,6 +59,20 @@ public class MovimentacaoExtrato {
     @JoinColumn(name = "lancamento_id")
     public Lancamento lancamento;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    public SituacaoMovimentacao situacao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "forma_conciliacao", length = 10)
+    public FormaConciliacao formaConciliacao;
+
+    @Column(name = "conciliada_em")
+    public Instant conciliadaEm;
+
+    @Column(length = 500)
+    public String justificativa;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     public Instant criadoEm;

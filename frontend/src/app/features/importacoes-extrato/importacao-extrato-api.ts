@@ -22,6 +22,7 @@ export interface ImportacaoExtratoResponse {
 
 export interface ImportacaoExtratoResultado {
   importacao: ImportacaoExtratoResponse;
+  conciliadasAutomaticamente: number;
   avisos: string[];
 }
 

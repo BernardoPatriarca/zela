@@ -4,5 +4,6 @@ import java.util.List;
 
 public record ImportacaoExtratoResultadoDto(
         ImportacaoExtratoResponseDto importacao,
+        int conciliadasAutomaticamente,
         List<String> avisos
 ) {}

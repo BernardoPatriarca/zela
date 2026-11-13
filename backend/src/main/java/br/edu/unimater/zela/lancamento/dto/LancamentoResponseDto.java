@@ -22,7 +22,7 @@ public record LancamentoResponseDto(
         Instant criadoEm,
         Instant atualizadoEm
 ) {
-    public static LancamentoResponseDto from(Lancamento lancamento) {
+    public static LancamentoResponseDto from(Lancamento lancamento, boolean conciliado) {
         return new LancamentoResponseDto(
                 lancamento.id,
                 lancamento.contaBancaria.id,
@@ -32,7 +32,7 @@ public record LancamentoResponseDto(
                 lancamento.dataLancamento,
                 lancamento.valor,
                 lancamento.descricao,
-                lancamento.situacao,
+                conciliado ? SituacaoLancamento.CONCILIADO : SituacaoLancamento.PENDENTE,
                 lancamento.criadoEm,
                 lancamento.atualizadoEm
         );

@@ -7,6 +7,7 @@ import br.edu.unimater.zela.categoria.CategoriaRepository;
 import br.edu.unimater.zela.categoria.TipoCategoria;
 import br.edu.unimater.zela.contabancaria.ContaBancaria;
 import br.edu.unimater.zela.contabancaria.ContaBancariaRepository;
+import br.edu.unimater.zela.importacaoextrato.MovimentacaoExtratoRepository;
 import br.edu.unimater.zela.lancamento.dto.LancamentoCreateDto;
 import br.edu.unimater.zela.lancamento.dto.LancamentoExclusaoDto;
 import br.edu.unimater.zela.lancamento.dto.LancamentoResponseDto;
@@ -21,6 +22,8 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -28,6 +31,9 @@ public class LancamentoService {
 
     @Inject
     LancamentoRepository repository;
+
+    @Inject
+    MovimentacaoExtratoRepository movimentacaoRepository;
 
     @Inject
     CasoRepository casoRepository;
@@ -48,12 +54,17 @@ public class LancamentoService {
         if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
             throw new BusinessRuleException("A data inicial não pode ser posterior à data final.");
         }
-        return repository.listar(caso.id, dataInicio, dataFim, contaBancariaId, tipo, categoriaId, situacao,
-                pagina, tamanho).map(LancamentoResponseDto::from);
+        Pagina<Lancamento> lancamentos = repository.listar(caso.id, dataInicio, dataFim, contaBancariaId, tipo,
+                categoriaId, situacao, pagina, tamanho);
+        Set<UUID> conciliados = new HashSet<>(movimentacaoRepository.listarLancamentosConciliados(
+                lancamentos.itens().stream().map(lancamento -> lancamento.id).toList()));
+        return lancamentos.map(lancamento -> LancamentoResponseDto.from(lancamento,
+                conciliados.contains(lancamento.id)));
     }
 
     public LancamentoResponseDto buscarPorId(UUID casoId, UUID id) {
-        return LancamentoResponseDto.from(buscar(buscarCaso(casoId), id));
+        Lancamento lancamento = buscar(buscarCaso(casoId), id);
+        return LancamentoResponseDto.from(lancamento, movimentacaoRepository.existePorLancamento(lancamento.id));
     }
 
     @Transactional
@@ -70,10 +81,9 @@ public class LancamentoService {
         lancamento.dataLancamento = dto.dataLancamento();
         lancamento.valor = dto.valor();
         lancamento.descricao = dto.descricao().trim();
-        lancamento.situacao = SituacaoLancamento.PENDENTE;
 
         repository.persistAndFlush(lancamento);
-        return LancamentoResponseDto.from(lancamento);
+        return LancamentoResponseDto.from(lancamento, false);
     }
 
     @Transactional
@@ -81,6 +91,13 @@ public class LancamentoService {
         Caso caso = buscarCasoEditavel(casoId);
         Lancamento lancamento = buscar(caso, id);
         ContaBancaria conta = buscarConta(caso, dto.contaBancariaId());
+        boolean conciliado = movimentacaoRepository.existePorLancamento(lancamento.id);
+        if (conciliado && (!conta.id.equals(lancamento.contaBancaria.id)
+                || dto.valor().compareTo(lancamento.valor) != 0
+                || !dto.dataLancamento().equals(lancamento.dataLancamento))) {
+            throw new BusinessRuleException(
+                    "Este lançamento está conciliado com o extrato e só a descrição e a categoria podem ser alteradas.");
+        }
         Categoria categoria = buscarCategoria(dto.categoriaId(), lancamento.tipo);
         validarData(dto.dataLancamento(), conta);
 
@@ -92,12 +109,15 @@ public class LancamentoService {
         lancamento.justificativaAlteracao = dto.justificativa().trim();
 
         repository.flush();
-        return LancamentoResponseDto.from(lancamento);
+        return LancamentoResponseDto.from(lancamento, conciliado);
     }
 
     @Transactional
     public void excluir(UUID casoId, UUID id, LancamentoExclusaoDto dto) {
         Lancamento lancamento = buscar(buscarCasoEditavel(casoId), id);
+        if (movimentacaoRepository.existePorLancamento(lancamento.id)) {
+            throw new BusinessRuleException("Este lançamento está conciliado com o extrato e não pode ser excluído.");
+        }
         lancamento.justificativaAlteracao = dto.justificativa().trim();
         lancamento.excluidoEm = Instant.now();
     }

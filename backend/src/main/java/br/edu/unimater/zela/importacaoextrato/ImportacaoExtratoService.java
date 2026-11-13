@@ -3,6 +3,7 @@ package br.edu.unimater.zela.importacaoextrato;
 import br.edu.unimater.zela.caso.Caso;
 import br.edu.unimater.zela.caso.CasoRepository;
 import br.edu.unimater.zela.categoria.TipoCategoria;
+import br.edu.unimater.zela.conciliacao.ConciliacaoService;
 import br.edu.unimater.zela.contabancaria.ContaBancaria;
 import br.edu.unimater.zela.contabancaria.ContaBancariaRepository;
 import br.edu.unimater.zela.importacaoextrato.dto.ImportacaoExtratoExclusaoDto;
@@ -42,6 +43,9 @@ public class ImportacaoExtratoService {
 
     @Inject
     MovimentacaoExtratoRepository movimentacaoRepository;
+
+    @Inject
+    ConciliacaoService conciliacaoService;
 
     @Inject
     CasoRepository casoRepository;
@@ -125,6 +129,7 @@ public class ImportacaoExtratoService {
             movimentacao.hash = hash;
             movimentacao.descricao = transacao.descricao();
             movimentacao.numeroDocumento = transacao.numeroDocumento();
+            movimentacao.situacao = SituacaoMovimentacao.PENDENTE;
             novas.add(movimentacao);
         }
 
@@ -152,7 +157,8 @@ public class ImportacaoExtratoService {
         }
 
         repository.flush();
-        return new ImportacaoExtratoResultadoDto(ImportacaoExtratoResponseDto.from(importacao), avisos);
+        int conciliadas = conciliacaoService.conciliar(List.of(conta.id)).conciliadas();
+        return new ImportacaoExtratoResultadoDto(ImportacaoExtratoResponseDto.from(importacao), conciliadas, avisos);
     }
 
     @Transactional

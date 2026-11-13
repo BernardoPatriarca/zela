@@ -1,1 +1,117 @@
-<h1>Conciliação</h1>
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog [style]="{ width: '32rem' }" [breakpoints]="{ '640px': '95vw' }" />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Conciliação</h1>
+    @if (caso()?.situacao === 'ATIVO') {
+    <p-button label="Conciliar automaticamente" icon="pi pi-sync" [loading]="conciliando()"
+      (onClick)="conciliar()" />
+    }
+  </header>
+
+  <p-select class="w-full md:max-w-xl" [options]="casos()" optionLabel="nome" optionValue="id"
+    [ngModel]="casoId()" (ngModelChange)="selecionarCaso($event)" placeholder="Selecione um caso" [filter]="true"
+    filterBy="nome" [showClear]="true" />
+
+  @if (caso()?.situacao === 'ENCERRADO') {
+  <p-message severity="info">Este caso está encerrado. Reabra o caso para conciliar o extrato.</p-message>
+  }
+
+  @if (!casoId()) {
+  <p-message severity="secondary">Selecione um caso para ver as movimentações do extrato.</p-message>
+  } @else if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar as movimentações agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="tentarNovamente()" />
+  </div>
+  } @else {
+  <div class="flex flex-wrap gap-3">
+    <p-datepicker class="w-full md:w-70" selectionMode="range" [ngModel]="periodo"
+      (ngModelChange)="filtrarPorPeriodo($event)" dateFormat="dd/mm/yy" placeholder="Período" [showIcon]="true"
+      [showClear]="true" [readonlyInput]="true" appendTo="body" fluid />
+
+    <p-select class="w-full md:w-96" [options]="contas()" optionLabel="nome" optionValue="id"
+      [(ngModel)]="filtro.contaBancariaId" (onChange)="filtrar()" placeholder="Todas as contas"
+      [showClear]="true" />
+
+    <p-select class="w-full md:w-56" [options]="situacoes" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
+  </div>
+
+  @if (resumo(); as dados) {
+  <div class="flex flex-wrap gap-3">
+    <div class="flex min-w-36 flex-col rounded-lg border border-[var(--p-content-border-color)] px-4 py-3">
+      <span class="text-2xl font-semibold">{{ dados.pendentes }}</span>
+      <span class="text-muted-color">Pendentes</span>
+    </div>
+    <div class="flex min-w-36 flex-col rounded-lg border border-[var(--p-content-border-color)] px-4 py-3">
+      <span class="text-2xl font-semibold">{{ dados.conciliadas }}</span>
+      <span class="text-muted-color">Conciliadas</span>
+    </div>
+    <div class="flex min-w-36 flex-col rounded-lg border border-[var(--p-content-border-color)] px-4 py-3">
+      <span class="text-2xl font-semibold">{{ dados.ignoradas }}</span>
+      <span class="text-muted-color">Ignoradas</span>
+    </div>
+  </div>
+  }
+
+  <p-table [value]="movimentacoes()" [loading]="carregando()" [lazy]="true" [lazyLoadOnInit]="false"
+    (onLazyLoad)="paginar($event)" [paginator]="true" [rows]="linhas" [first]="primeiro()"
+    [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Data</th>
+        <th>Conta</th>
+        <th>Descrição do extrato</th>
+        <th class="w-28">Tipo</th>
+        <th class="text-right">Valor</th>
+        <th class="w-32">Situação</th>
+        <th class="w-32">Forma</th>
+        <th>Lançamento</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-movimentacao>
+      <tr>
+        <td class="whitespace-nowrap">{{ movimentacao.dataMovimentacao | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ nomeConta(movimentacao.contaBancariaId) }}</td>
+        <td>{{ movimentacao.descricao }}</td>
+        <td>
+          <p-tag [value]="nomeTipo(movimentacao.tipo)"
+            [severity]="movimentacao.tipo === 'RECEITA' ? 'success' : 'warn'" />
+        </td>
+        <td class="valor text-right whitespace-nowrap"
+          [class]="movimentacao.tipo === 'DESPESA' ? 'text-[var(--zela-danger)]' : ''">
+          {{ (movimentacao.tipo === 'DESPESA' ? -movimentacao.valor : movimentacao.valor) | moeda }}
+        </td>
+        <td>
+          <p-tag [value]="nomeSituacao(movimentacao.situacao)"
+            [severity]="severidadeSituacao(movimentacao.situacao)" />
+        </td>
+        <td>{{ nomeForma(movimentacao.formaConciliacao) }}</td>
+        <td>
+          @if (movimentacao.lancamentoId) {
+          <div>{{ movimentacao.lancamentoDescricao }}</div>
+          <small class="text-muted-color">{{ movimentacao.lancamentoCategoriaNome }}</small>
+          } @else if (movimentacao.situacao === 'PENDENTE') {
+          @if (movimentacao.candidatos > 0) {
+          {{ movimentacao.candidatos }} {{ movimentacao.candidatos === 1 ? 'candidato' : 'candidatos' }}
+          } @else {
+          Sem lançamento correspondente
+          }
+          } @else {
+          -
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">Nenhuma movimentação encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+</section>

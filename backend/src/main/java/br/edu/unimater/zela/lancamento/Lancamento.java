@@ -43,10 +43,6 @@ public class Lancamento {
     @Column(nullable = false, length = 255)
     public String descricao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    public SituacaoLancamento situacao;
-
     @Column(name = "justificativa_alteracao", length = 500)
     public String justificativaAlteracao;
 

@@ -6,6 +6,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -52,9 +53,12 @@ public class LancamentoRepository implements PanacheRepositoryBase<Lancamento, U
             query.append(" and ca.id = :categoriaId");
             parametros.and("categoriaId", categoriaId);
         }
-        if (situacao != null) {
-            query.append(" and l.situacao = :situacao");
-            parametros.and("situacao", situacao);
+        if (situacao == SituacaoLancamento.CONCILIADO) {
+            query.append(" and exists (select 1 from MovimentacaoExtrato m where m.lancamento = l"
+                    + " and m.excluidoEm is null)");
+        } else if (situacao == SituacaoLancamento.PENDENTE) {
+            query.append(" and not exists (select 1 from MovimentacaoExtrato m where m.lancamento = l"
+                    + " and m.excluidoEm is null)");
         }
 
         List<Lancamento> lancamentos = find(CONSULTA_COMPLETA + query + " order by l.dataLancamento desc, l.criadoEm desc",
@@ -68,6 +72,32 @@ public class LancamentoRepository implements PanacheRepositoryBase<Lancamento, U
     public Optional<Lancamento> buscarPorId(UUID id, UUID casoId) {
         return find(CONSULTA_COMPLETA + "where l.id = ?1 and c.casoId = ?2 and l.excluidoEm is null", id, casoId)
                 .firstResultOptional();
+    }
+
+    public List<Lancamento> listarDisponiveisParaConciliacao(List<UUID> contasIds) {
+        return list("""
+                from Lancamento l
+                where l.contaBancaria.id in ?1 and l.excluidoEm is null
+                and not exists (select 1 from MovimentacaoExtrato m where m.lancamento = l and m.excluidoEm is null)
+                order by l.criadoEm, l.id
+                """, contasIds);
+    }
+
+    public List<Object[]> contarDisponiveisPorChave(List<UUID> contasIds, List<LocalDate> datas,
+                                                    List<BigDecimal> valores) {
+        return getEntityManager()
+                .createQuery("""
+                        select l.contaBancaria.id, l.tipo, l.valor, l.dataLancamento, count(l)
+                        from Lancamento l
+                        where l.contaBancaria.id in ?1 and l.dataLancamento in ?2 and l.valor in ?3
+                        and l.excluidoEm is null
+                        and not exists (select 1 from MovimentacaoExtrato m where m.lancamento = l and m.excluidoEm is null)
+                        group by l.contaBancaria.id, l.tipo, l.valor, l.dataLancamento
+                        """, Object[].class)
+                .setParameter(1, contasIds)
+                .setParameter(2, datas)
+                .setParameter(3, valores)
+                .getResultList();
     }
 
     public boolean existePorCategoria(UUID categoriaId) {

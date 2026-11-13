@@ -23,6 +23,10 @@ public class ContaBancariaRepository implements PanacheRepositoryBase<ContaBanca
         return new Pagina<>(contas, total, pagina, tamanho);
     }
 
+    public List<ContaBancaria> listarPorCaso(UUID casoId) {
+        return list("casoId = ?1 and excluidoEm is null", casoId);
+    }
+
     public Optional<ContaBancaria> buscarPorId(UUID id, UUID casoId) {
         return find("""
                 from ContaBancaria c join fetch c.banco
