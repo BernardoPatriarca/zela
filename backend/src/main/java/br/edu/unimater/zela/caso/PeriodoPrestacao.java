@@ -33,6 +33,16 @@ public class PeriodoPrestacao {
     @Column(name = "entregue_em")
     public LocalDate entregueEm;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    public SituacaoPeriodo situacao = SituacaoPeriodo.AGUARDANDO_CURADOR;
+
+    @Column(name = "prazo_curador")
+    public LocalDate prazoCurador;
+
+    @Column(name = "notas_explicativas", length = 4000)
+    public String notasExplicativas;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     public Instant criadoEm;
@@ -46,6 +56,14 @@ public class PeriodoPrestacao {
 
     public boolean isAtivo() {
         return excluidoEm == null;
+    }
+
+    public boolean isEntregue() {
+        return situacao == SituacaoPeriodo.ENTREGUE;
+    }
+
+    public boolean mudariaDatas(LocalDate inicio, int periodicidadeMeses) {
+        return !inicio.equals(dataInicio) || !inicio.plusMonths(periodicidadeMeses).minusDays(1).equals(dataFim);
     }
 
     public void definirDatas(LocalDate inicio, int periodicidadeMeses, int prazoEntregaDias) {

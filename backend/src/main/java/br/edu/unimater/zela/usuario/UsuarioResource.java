@@ -1,6 +1,7 @@
 package br.edu.unimater.zela.usuario;
 
 import br.edu.unimater.zela.usuario.dto.UsuarioCreateDto;
+import br.edu.unimater.zela.usuario.dto.UsuarioDadosProfissionaisDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioResponseDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioUpdateDto;
 import io.quarkus.security.Authenticated;
@@ -40,6 +41,12 @@ public class UsuarioResource {
     @Path("/me")
     public UsuarioResponseDto me() {
         return service.me();
+    }
+
+    @PUT
+    @Path("/me/dados-profissionais")
+    public UsuarioResponseDto atualizarDadosProfissionais(@Valid UsuarioDadosProfissionaisDto dto) {
+        return service.atualizarDadosProfissionais(dto);
     }
 
     @GET

@@ -118,6 +118,11 @@ public class CasoService {
         PeriodoPrestacao periodo = periodoRepository.buscarAberto(caso.id).orElse(null);
         if (periodo != null) {
             validarInicioPeriodo(caso.id, dto.inicioPeriodo());
+            if (periodo.situacao != SituacaoPeriodo.AGUARDANDO_CURADOR
+                    && periodo.mudariaDatas(dto.inicioPeriodo(), caso.periodicidadeMeses)) {
+                throw new BusinessRuleException("A prestação de contas deste período já está em andamento e as "
+                        + "datas dele não podem mais ser alteradas.");
+            }
             periodo.definirDatas(dto.inicioPeriodo(), caso.periodicidadeMeses, caso.prazoEntregaDias);
         }
 

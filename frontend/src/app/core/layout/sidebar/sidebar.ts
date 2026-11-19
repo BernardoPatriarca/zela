@@ -19,6 +19,7 @@ export class Sidebar {
     { label: 'Lançamentos', icon: 'pi pi-wallet', rota: '/lancamentos' },
     { label: 'Importar extrato', icon: 'pi pi-upload', rota: '/importacoes-extrato' },
     { label: 'Conciliação', icon: 'pi pi-sync', rota: '/conciliacao' },
+    { label: 'Prestação de contas', icon: 'pi pi-file-check', rota: '/prestacao-contas' },
     { label: 'Relatórios', icon: 'pi pi-file-pdf', rota: '/relatorios' },
     { label: 'Prazos', icon: 'pi pi-calendar', rota: '/prazos' },
     { label: 'Histórico', icon: 'pi pi-history', rota: '/historico' },

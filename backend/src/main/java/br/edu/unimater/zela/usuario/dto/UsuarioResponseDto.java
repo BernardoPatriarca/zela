@@ -9,6 +9,9 @@ public record UsuarioResponseDto(
         UUID id,
         String nome,
         String email,
+        String nomeCompleto,
+        String oabNumero,
+        String oabUf,
         Instant criadoEm,
         Instant atualizadoEm
 ) {
@@ -17,6 +20,9 @@ public record UsuarioResponseDto(
                 usuario.id,
                 usuario.nome,
                 usuario.email,
+                usuario.nomeCompleto,
+                usuario.oabNumero,
+                usuario.oabUf,
                 usuario.criadoEm,
                 usuario.atualizadoEm
         );

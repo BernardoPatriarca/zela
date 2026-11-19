@@ -166,6 +166,18 @@
         }
       </div>
 
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-7">
+        <label for="emitenteNome">Emitente (opcional)</label>
+        <input pInputText id="emitenteNome" formControlName="emitenteNome" maxlength="150"
+          placeholder="Ex.: Farmácia São João" fluid />
+      </div>
+
+      <div class="col-span-12 flex flex-col gap-1.5 md:col-span-5">
+        <label for="emitenteDocumento">CPF ou CNPJ do emitente</label>
+        <input pInputText id="emitenteDocumento" formControlName="emitenteDocumento" maxlength="18"
+          placeholder="Somente se constar no comprovante" fluid />
+      </div>
+
       @if (editandoId()) {
       <div class="col-span-12 flex flex-col gap-1.5">
         <label for="justificativa">Justificativa da alteração</label>

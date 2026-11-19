@@ -84,6 +84,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'prestacao-contas',
+        title: 'Prestação de contas',
+        loadComponent: () =>
+          import('./features/prestacao-contas/prestacao-contas-page/prestacao-contas-page').then(
+            (m) => m.PrestacaoContasPage,
+          ),
+      },
+      {
         path: 'relatorios',
         title: 'Relatórios',
         loadComponent: () =>

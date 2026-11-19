@@ -2,6 +2,7 @@ package br.edu.unimater.zela.lancamento;
 
 import br.edu.unimater.zela.caso.Caso;
 import br.edu.unimater.zela.caso.CasoRepository;
+import br.edu.unimater.zela.caso.PeriodoPrestacaoRepository;
 import br.edu.unimater.zela.categoria.Categoria;
 import br.edu.unimater.zela.categoria.CategoriaRepository;
 import br.edu.unimater.zela.categoria.TipoCategoria;
@@ -15,6 +16,8 @@ import br.edu.unimater.zela.lancamento.dto.LancamentoUpdateDto;
 import br.edu.unimater.zela.shared.dto.Pagina;
 import br.edu.unimater.zela.shared.exception.BusinessRuleException;
 import br.edu.unimater.zela.shared.exception.ResourceNotFoundException;
+import br.edu.unimater.zela.shared.util.Documento;
+import br.edu.unimater.zela.shared.util.Texto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -37,6 +40,9 @@ public class LancamentoService {
 
     @Inject
     CasoRepository casoRepository;
+
+    @Inject
+    PeriodoPrestacaoRepository periodoRepository;
 
     @Inject
     ContaBancariaRepository contaBancariaRepository;
@@ -73,6 +79,8 @@ public class LancamentoService {
         ContaBancaria conta = buscarConta(caso, dto.contaBancariaId());
         Categoria categoria = buscarCategoria(dto.categoriaId(), dto.tipo());
         validarData(dto.dataLancamento(), conta);
+        validarPeriodoNaoEntregue(caso, dto.dataLancamento());
+        String emitenteDocumento = validarDocumento(dto.emitenteDocumento());
 
         Lancamento lancamento = new Lancamento();
         lancamento.contaBancaria = conta;
@@ -81,6 +89,8 @@ public class LancamentoService {
         lancamento.dataLancamento = dto.dataLancamento();
         lancamento.valor = dto.valor();
         lancamento.descricao = dto.descricao().trim();
+        lancamento.emitenteNome = Texto.trimOuNulo(dto.emitenteNome());
+        lancamento.emitenteDocumento = emitenteDocumento;
 
         repository.persistAndFlush(lancamento);
         return LancamentoResponseDto.from(lancamento, false);
@@ -91,6 +101,8 @@ public class LancamentoService {
         Caso caso = buscarCasoEditavel(casoId);
         Lancamento lancamento = buscar(caso, id);
         ContaBancaria conta = buscarConta(caso, dto.contaBancariaId());
+        validarPeriodoNaoEntregue(caso, lancamento.dataLancamento);
+        validarPeriodoNaoEntregue(caso, dto.dataLancamento());
         boolean conciliado = movimentacaoRepository.existePorLancamento(lancamento.id);
         if (conciliado && (!conta.id.equals(lancamento.contaBancaria.id)
                 || dto.valor().compareTo(lancamento.valor) != 0
@@ -100,12 +112,15 @@ public class LancamentoService {
         }
         Categoria categoria = buscarCategoria(dto.categoriaId(), lancamento.tipo);
         validarData(dto.dataLancamento(), conta);
+        String emitenteDocumento = validarDocumento(dto.emitenteDocumento());
 
         lancamento.contaBancaria = conta;
         lancamento.categoria = categoria;
         lancamento.dataLancamento = dto.dataLancamento();
         lancamento.valor = dto.valor();
         lancamento.descricao = dto.descricao().trim();
+        lancamento.emitenteNome = Texto.trimOuNulo(dto.emitenteNome());
+        lancamento.emitenteDocumento = emitenteDocumento;
         lancamento.justificativaAlteracao = dto.justificativa().trim();
 
         repository.flush();
@@ -114,7 +129,9 @@ public class LancamentoService {
 
     @Transactional
     public void excluir(UUID casoId, UUID id, LancamentoExclusaoDto dto) {
-        Lancamento lancamento = buscar(buscarCasoEditavel(casoId), id);
+        Caso caso = buscarCasoEditavel(casoId);
+        Lancamento lancamento = buscar(caso, id);
+        validarPeriodoNaoEntregue(caso, lancamento.dataLancamento);
         if (movimentacaoRepository.existePorLancamento(lancamento.id)) {
             throw new BusinessRuleException("Este lançamento está conciliado com o extrato e não pode ser excluído.");
         }
@@ -152,6 +169,21 @@ public class LancamentoService {
             throw new BusinessRuleException("A categoria não corresponde ao tipo do lançamento.");
         }
         return categoria;
+    }
+
+    private void validarPeriodoNaoEntregue(Caso caso, LocalDate data) {
+        if (periodoRepository.existeEntregueNaData(caso.id, data)) {
+            throw new BusinessRuleException(
+                    "Esta data pertence a um período já entregue e os lançamentos dele não podem mais ser alterados.");
+        }
+    }
+
+    private String validarDocumento(String documento) {
+        String digitos = Texto.apenasDigitos(documento);
+        if (digitos != null && !Documento.valido(digitos)) {
+            throw new BusinessRuleException("CPF ou CNPJ do emitente inválido.");
+        }
+        return digitos;
     }
 
     private void validarData(LocalDate data, ContaBancaria conta) {

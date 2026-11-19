@@ -2,7 +2,9 @@ package br.edu.unimater.zela.usuario;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -19,6 +21,16 @@ public class Usuario {
 
     @Column(nullable = false, length = 255)
     public String email;
+
+    @Column(name = "nome_completo", length = 150)
+    public String nomeCompleto;
+
+    @Column(name = "oab_numero", length = 10)
+    public String oabNumero;
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "oab_uf", length = 2)
+    public String oabUf;
 
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)

@@ -1,0 +1,355 @@
+<section class="flex flex-col gap-4">
+  <p-toast />
+  <p-confirmdialog [style]="{ width: '32rem' }" [breakpoints]="{ '640px': '95vw' }" />
+
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Prestação de contas</h1>
+  </header>
+
+  <div class="flex flex-wrap gap-3">
+    <p-select class="w-full md:w-96" [options]="casos()" optionLabel="nome" optionValue="id" [ngModel]="casoId()"
+      (ngModelChange)="selecionarCaso($event)" placeholder="Todos os casos" [filter]="true" filterBy="nome"
+      [showClear]="true" />
+
+    <p-select class="w-full md:w-60" [options]="situacoes" optionLabel="label" optionValue="value"
+      [(ngModel)]="filtro.situacao" (onChange)="filtrar()" placeholder="Todas as situações" [showClear]="true" />
+  </div>
+
+  @if (erroLista()) {
+  <p-message severity="error" role="alert">
+    Não conseguimos carregar as prestações de contas agora. Tente novamente em instantes.
+  </p-message>
+  <div>
+    <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="carregar()" />
+  </div>
+  } @else {
+  <p-table [value]="prestacoes()" [loading]="carregando()" [lazy]="true" [lazyLoadOnInit]="false"
+    (onLazyLoad)="paginar($event)" [paginator]="true" [rows]="linhas" [first]="primeiro()"
+    [totalRecords]="total()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Caso</th>
+        <th>Período</th>
+        <th class="w-48">Situação</th>
+        <th>Prazo do curador</th>
+        <th>Prazo legal</th>
+        <th>Entrega</th>
+        <th class="w-28"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-prestacao>
+      <tr>
+        <td>
+          <div>{{ prestacao.pessoaProtegidaNome }}</div>
+          <small class="valor text-muted-color">{{ prestacao.numeroProcesso | cnj }}</small>
+        </td>
+        <td class="whitespace-nowrap">
+          {{ prestacao.dataInicio | date: 'dd/MM/yyyy' }} a {{ prestacao.dataFim | date: 'dd/MM/yyyy' }}
+        </td>
+        <td>
+          <p-tag [value]="nomeSituacao(prestacao.situacao)" [severity]="severidadeSituacao(prestacao.situacao)" />
+        </td>
+        <td>{{ prestacao.prazoCurador ? (prestacao.prazoCurador | date: 'dd/MM/yyyy') : '-' }}</td>
+        <td class="whitespace-nowrap">
+          <span [class]="prestacao.vencido ? 'text-[var(--zela-danger)] font-semibold' : ''">
+            {{ prestacao.prazoEntrega | date: 'dd/MM/yyyy' }}
+          </span>
+          @if (prestacao.vencido) {
+          <p-tag class="ml-2" value="Vencido" severity="danger" />
+          }
+        </td>
+        <td class="whitespace-nowrap">
+          @if (prestacao.entregueEm) {
+          <div>{{ prestacao.entregueEm | date: 'dd/MM/yyyy' }}</div>
+          <small [class]="prestacao.entregueNoPrazo ? 'text-muted-color' : 'text-[var(--zela-danger)]'">
+            {{ prestacao.entregueNoPrazo ? 'Entregue no prazo' : 'Entregue com atraso' }}
+          </small>
+          } @else {
+          -
+          }
+        </td>
+        <td class="w-28 text-right">
+          <p-button label="Abrir" icon="pi pi-folder-open" [text]="true" (onClick)="abrir(prestacao)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">Nenhuma prestação de contas encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  <p-dialog #janela [(visible)]="dialogAberto" [modal]="true" [maximizable]="true" header="Prestação de contas"
+    [style]="{ width: '70rem' }" [breakpoints]="{ '1100px': '95vw' }" (onShow)="maximizar(janela)">
+    @if (erroDialogo(); as mensagem) {
+    <p-message severity="error" role="alert">{{ mensagem }}</p-message>
+    }
+
+    @if (abrindo() && !detalhe()) {
+    <p-message severity="secondary">Carregando a prestação de contas...</p-message>
+    }
+
+    @if (detalhe(); as d) {
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="flex flex-col gap-1">
+          <strong>{{ d.pessoaProtegidaNome }}</strong>
+          <span class="valor text-muted-color">{{ d.numeroProcesso | cnj }}</span>
+          <span>
+            Período de {{ d.dataInicio | date: 'dd/MM/yyyy' }} a {{ d.dataFim | date: 'dd/MM/yyyy' }}
+            · Prazo legal {{ d.prazoEntrega | date: 'dd/MM/yyyy' }}
+          </span>
+          <div class="flex items-center gap-2">
+            <p-tag [value]="nomeSituacao(d.situacao)" [severity]="severidadeSituacao(d.situacao)" />
+            @if (d.entregueEm) {
+            <span>
+              Entregue em {{ d.entregueEm | date: 'dd/MM/yyyy' }}
+              ({{ d.entregueNoPrazo ? 'no prazo' : 'com atraso' }})
+            </span>
+            }
+          </div>
+        </div>
+
+        @if (!somenteLeitura) {
+        <div class="flex flex-wrap gap-2">
+          @if (d.situacao === 'AGUARDANDO_CURADOR') {
+          <p-button label="Recebi do curador" icon="pi pi-inbox" [loading]="processando()"
+            (onClick)="receberDoCurador()" />
+          }
+          @if (d.situacao === 'PRONTO') {
+          <p-button label="Voltar para revisão" icon="pi pi-undo" severity="secondary" [outlined]="true"
+            [loading]="processando()" (onClick)="voltarParaRevisao()" />
+          <p-button label="Marcar como entregue" icon="pi pi-check" severity="success" [loading]="processando()"
+            (onClick)="abrirEntrega()" />
+          }
+        </div>
+        }
+      </div>
+
+      @if (d.casoEncerrado) {
+      <p-message severity="info">Este caso está encerrado. Reabra o caso para alterar a prestação de contas.</p-message>
+      }
+
+      @if (d.situacao === 'AGUARDANDO_CURADOR' && !somenteLeitura) {
+      <p-message severity="secondary">
+        Esta prestação está aguardando o curador. Quando receber os documentos, use "Recebi do curador".
+      </p-message>
+      }
+
+      <section class="flex flex-col gap-3">
+        <h3>Saldos iniciais por conta</h3>
+        @for (saldo of saldosEdicao(); track saldo.contaBancariaId) {
+        <div class="grid grid-cols-12 items-center gap-3">
+          <div class="col-span-12 md:col-span-6">
+            {{ saldo.contaDescricao }}
+            @if (!saldo.informado) {
+            <p-tag class="ml-2" value="Confirme e salve" severity="warn" />
+            }
+          </div>
+          <div class="col-span-12 md:col-span-3">
+            <p-inputnumber [(ngModel)]="saldo.saldoInicial" mode="currency" currency="BRL" locale="pt-BR"
+              [minFractionDigits]="2" [maxFractionDigits]="2" [disabled]="somenteLeitura" fluid />
+          </div>
+          <div class="col-span-12 text-muted-color md:col-span-3">
+            @if (saldo.saldoFinal !== null) {
+            Saldo final: {{ saldo.saldoFinal | moeda }}
+            }
+          </div>
+        </div>
+        } @empty {
+        <p-message severity="secondary">Este caso ainda não tem contas bancárias cadastradas.</p-message>
+        }
+        @if (!somenteLeitura && saldosEdicao().length > 0) {
+        <div>
+          <p-button label="Salvar saldos" icon="pi pi-save" severity="secondary" [outlined]="true"
+            [loading]="salvandoSaldos()" (onClick)="salvarSaldos()" />
+        </div>
+        }
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <h3>Conferência de pendências</h3>
+        @if (d.pendencias.length === 0) {
+        <p-message severity="success">Nenhuma pendência encontrada neste período.</p-message>
+        } @else {
+        <p-message severity="warn">
+          {{ d.pendencias.length }} {{ d.pendencias.length === 1 ? 'pendência' : 'pendências' }} neste período.
+          Nenhuma bloqueia a geração do PDF: corrija ou deixe como ressalva, com uma justificativa.
+        </p-message>
+        @for (pendencia of d.pendencias; track chave(pendencia)) {
+        <div class="flex flex-col gap-2 rounded-lg border border-[var(--p-content-border-color)] p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <p-tag [value]="nomesPendencia[pendencia.tipo]" severity="warn" />
+            <span>{{ pendencia.texto }}</span>
+          </div>
+          <textarea pTextarea [(ngModel)]="justificativas[chave(pendencia)]" rows="2" maxlength="1000"
+            placeholder="Justificativa (aparece nas ressalvas do PDF)" [disabled]="somenteLeitura"
+            (blur)="salvarJustificativa(pendencia)" fluid></textarea>
+        </div>
+        }
+        }
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <h3>Prazo do curador e notas explicativas</h3>
+        <div class="grid grid-cols-12 gap-4">
+          <div class="col-span-12 flex flex-col gap-1.5 md:col-span-4">
+            <label for="prazoCurador">Prazo do curador</label>
+            <p-datepicker inputId="prazoCurador" [(ngModel)]="prazoCurador" dateFormat="dd/mm/yy" [showIcon]="true"
+              [showClear]="true" [disabled]="somenteLeitura" appendTo="body" fluid />
+          </div>
+          <div class="col-span-12 flex flex-col gap-1.5">
+            <label for="notas">Notas explicativas</label>
+            <textarea pTextarea id="notas" [formControl]="notas" rows="3" maxlength="4000"
+              placeholder="Informações que o advogado quer deixar registradas no PDF."
+              fluid></textarea>
+          </div>
+        </div>
+        @if (!somenteLeitura) {
+        <div>
+          <p-button label="Salvar" icon="pi pi-save" severity="secondary" [outlined]="true"
+            [loading]="salvandoDados()" (onClick)="salvarDados()" />
+        </div>
+        }
+      </section>
+
+      @if (!somenteLeitura && (d.situacao === 'EM_REVISAO' || d.situacao === 'PRONTO')) {
+      <section class="flex flex-col gap-3">
+        <h3>Próximo passo</h3>
+        <div class="flex flex-wrap gap-6">
+          <div class="flex flex-col gap-2">
+            <strong>Corrigir</strong>
+            <div class="flex flex-wrap gap-2">
+              <p-button label="Lançamentos" icon="pi pi-wallet" severity="secondary" [outlined]="true"
+                (onClick)="irPara('/lancamentos')" />
+              <p-button label="Conciliação" icon="pi pi-sync" severity="secondary" [outlined]="true"
+                (onClick)="irPara('/conciliacao')" />
+              <p-button label="Importar extrato" icon="pi pi-upload" severity="secondary" [outlined]="true"
+                (onClick)="irPara('/importacoes-extrato')" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <strong>Gerar o relatório</strong>
+            <div>
+              <p-button label="Gerar PDF" icon="pi pi-file-pdf" [loading]="processando()" (onClick)="gerarPdf()" />
+            </div>
+          </div>
+        </div>
+      </section>
+      }
+
+      <section class="flex flex-col gap-3">
+        <h3>Relatórios gerados</h3>
+        <p-table [value]="d.relatorios" dataKey="id">
+          <ng-template #header>
+            <tr>
+              <th class="w-24">Versão</th>
+              <th>Gerado em</th>
+              <th>Ressalvas</th>
+              <th class="text-right">Saldo final</th>
+              <th class="w-40"></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-relatorio>
+            <tr>
+              <td>v{{ relatorio.versao }}</td>
+              <td class="whitespace-nowrap">{{ relatorio.geradoEm | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                @if (relatorio.comRessalvas) {
+                <p-tag [value]="relatorio.quantidadePendencias + ' ressalvas'" severity="warn" />
+                } @else {
+                <p-tag value="Sem ressalvas" severity="success" />
+                }
+                @if (relatorio.id === d.relatorioEntregueId) {
+                <p-tag class="ml-2" value="Entregue" severity="info" />
+                }
+              </td>
+              <td class="valor text-right whitespace-nowrap">{{ relatorio.saldoFinalTotal | moeda }}</td>
+              <td class="w-40 text-right">
+                <p-button label="Baixar" icon="pi pi-download" [text]="true" (onClick)="baixar(relatorio)" />
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="5">Nenhum relatório gerado ainda.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </section>
+    </div>
+    }
+  </p-dialog>
+
+  <p-dialog [(visible)]="entregaAberta" [modal]="true" header="Marcar como entregue" [style]="{ width: '30rem' }"
+    [breakpoints]="{ '640px': '95vw' }">
+    <div class="flex flex-col gap-4">
+      @if (erroEntrega(); as mensagem) {
+      <p-message severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <p>
+        Ao marcar como entregue, os saldos finais são congelados, os lançamentos deste período não poderão mais ser
+        alterados e o próximo período é aberto.
+      </p>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="dataEntrega">Data da entrega</label>
+        <p-datepicker inputId="dataEntrega" [formControl]="dataEntrega" dateFormat="dd/mm/yy" [showIcon]="true"
+          [minDate]="minimoEntrega" [maxDate]="hoje" appendTo="body" fluid />
+        @if (dataEntrega.invalid && dataEntrega.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a data da entrega.</p-message>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="entregaAberta.set(false)" />
+        <p-button label="Marcar como entregue" [loading]="entregando()" (onClick)="entregar()" />
+      </div>
+    </div>
+  </p-dialog>
+
+  <p-dialog [(visible)]="dadosAberto" [modal]="true" header="Seus dados profissionais" [style]="{ width: '34rem' }"
+    [breakpoints]="{ '640px': '95vw' }">
+    <form class="grid grid-cols-12 gap-4" [formGroup]="formPerfil" (ngSubmit)="salvarPerfil()" novalidate>
+      @if (erroPerfil(); as mensagem) {
+      <p-message class="col-span-12" severity="error" role="alert">{{ mensagem }}</p-message>
+      }
+
+      <p class="col-span-12">
+        Para gerar o PDF, informe seu nome completo e sua OAB. Eles ficam salvos no seu usuário.
+      </p>
+
+      <div class="col-span-12 flex flex-col gap-1.5">
+        <label for="nomeCompleto">Nome completo</label>
+        <input pInputText id="nomeCompleto" formControlName="nomeCompleto" maxlength="150" fluid />
+        @if (nomeCompleto.invalid && nomeCompleto.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe o nome completo.</p-message>
+        }
+      </div>
+
+      <div class="col-span-8 flex flex-col gap-1.5">
+        <label for="oabNumero">Número da OAB</label>
+        <input pInputText id="oabNumero" formControlName="oabNumero" maxlength="7" inputmode="numeric" fluid />
+        @if (oabNumero.invalid && oabNumero.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe apenas os dígitos da OAB.</p-message>
+        }
+      </div>
+
+      <div class="col-span-4 flex flex-col gap-1.5">
+        <label for="oabUf">UF</label>
+        <input pInputText id="oabUf" formControlName="oabUf" maxlength="2" fluid />
+        @if (oabUf.invalid && oabUf.touched) {
+        <p-message severity="error" variant="simple" size="small">Informe a UF.</p-message>
+        }
+      </div>
+
+      <div class="col-span-12 flex justify-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dadosAberto.set(false)" />
+        <p-button type="submit" label="Salvar e continuar" [loading]="salvandoPerfil()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

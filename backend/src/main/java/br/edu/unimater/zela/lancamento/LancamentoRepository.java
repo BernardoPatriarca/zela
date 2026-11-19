@@ -79,6 +79,9 @@ public class LancamentoRepository implements PanacheRepositoryBase<Lancamento, U
                 from Lancamento l
                 where l.contaBancaria.id in ?1 and l.excluidoEm is null
                 and not exists (select 1 from MovimentacaoExtrato m where m.lancamento = l and m.excluidoEm is null)
+                and not exists (select 1 from PeriodoPrestacao p
+                    where p.casoId = l.contaBancaria.casoId and p.entregueEm is not null and p.excluidoEm is null
+                    and l.dataLancamento between p.dataInicio and p.dataFim)
                 order by l.criadoEm, l.id
                 """, contasIds);
     }
@@ -92,12 +95,25 @@ public class LancamentoRepository implements PanacheRepositoryBase<Lancamento, U
                         where l.contaBancaria.id in ?1 and l.dataLancamento in ?2 and l.valor in ?3
                         and l.excluidoEm is null
                         and not exists (select 1 from MovimentacaoExtrato m where m.lancamento = l and m.excluidoEm is null)
+                        and not exists (select 1 from PeriodoPrestacao p
+                            where p.casoId = l.contaBancaria.casoId and p.entregueEm is not null
+                            and p.excluidoEm is null and l.dataLancamento between p.dataInicio and p.dataFim)
                         group by l.contaBancaria.id, l.tipo, l.valor, l.dataLancamento
                         """, Object[].class)
                 .setParameter(1, contasIds)
                 .setParameter(2, datas)
                 .setParameter(3, valores)
                 .getResultList();
+    }
+
+    public List<Lancamento> listarDoPeriodo(List<UUID> contasIds, LocalDate dataInicio, LocalDate dataFim) {
+        return list("""
+                from Lancamento l
+                join fetch l.contaBancaria c
+                join fetch l.categoria ca
+                where c.id in ?1 and l.dataLancamento between ?2 and ?3 and l.excluidoEm is null
+                order by l.dataLancamento, l.criadoEm, l.id
+                """, contasIds, dataInicio, dataFim);
     }
 
     public boolean existePorCategoria(UUID categoriaId) {

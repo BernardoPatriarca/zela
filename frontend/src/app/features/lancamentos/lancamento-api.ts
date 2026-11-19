@@ -16,6 +16,8 @@ export interface LancamentoResponse {
   dataLancamento: string;
   valor: number;
   descricao: string;
+  emitenteNome: string | null;
+  emitenteDocumento: string | null;
   situacao: SituacaoLancamento;
 }
 
@@ -26,6 +28,8 @@ export interface LancamentoRequest {
   dataLancamento: string;
   valor: number;
   descricao: string;
+  emitenteNome: string | null;
+  emitenteDocumento: string | null;
 }
 
 export type LancamentoUpdateRequest = Omit<LancamentoRequest, 'tipo'> & { justificativa: string };

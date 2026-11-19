@@ -31,6 +31,12 @@ public record LancamentoUpdateDto(
         @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres.")
         String descricao,
 
+        @Size(max = 150, message = "O nome do emitente deve ter no máximo 150 caracteres.")
+        String emitenteNome,
+
+        @Size(max = 18, message = "O documento do emitente deve ter no máximo 18 caracteres.")
+        String emitenteDocumento,
+
         @NotBlank(message = "A justificativa é obrigatória.")
         @Size(min = 10, max = 500, message = "A justificativa deve ter entre 10 e 500 caracteres.")
         String justificativa

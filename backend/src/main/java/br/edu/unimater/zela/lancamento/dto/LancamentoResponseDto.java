@@ -18,6 +18,8 @@ public record LancamentoResponseDto(
         LocalDate dataLancamento,
         BigDecimal valor,
         String descricao,
+        String emitenteNome,
+        String emitenteDocumento,
         SituacaoLancamento situacao,
         Instant criadoEm,
         Instant atualizadoEm
@@ -32,6 +34,8 @@ public record LancamentoResponseDto(
                 lancamento.dataLancamento,
                 lancamento.valor,
                 lancamento.descricao,
+                lancamento.emitenteNome,
+                lancamento.emitenteDocumento,
                 conciliado ? SituacaoLancamento.CONCILIADO : SituacaoLancamento.PENDENTE,
                 lancamento.criadoEm,
                 lancamento.atualizadoEm

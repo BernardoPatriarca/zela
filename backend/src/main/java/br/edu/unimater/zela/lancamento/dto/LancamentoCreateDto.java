@@ -33,5 +33,11 @@ public record LancamentoCreateDto(
 
         @NotBlank(message = "A descrição é obrigatória.")
         @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres.")
-        String descricao
+        String descricao,
+
+        @Size(max = 150, message = "O nome do emitente deve ter no máximo 150 caracteres.")
+        String emitenteNome,
+
+        @Size(max = 18, message = "O documento do emitente deve ter no máximo 18 caracteres.")
+        String emitenteDocumento
 ) {}

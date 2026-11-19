@@ -2,6 +2,8 @@ package br.edu.unimater.zela.importacaoextrato;
 
 import br.edu.unimater.zela.caso.Caso;
 import br.edu.unimater.zela.caso.CasoRepository;
+import br.edu.unimater.zela.caso.PeriodoPrestacao;
+import br.edu.unimater.zela.caso.PeriodoPrestacaoRepository;
 import br.edu.unimater.zela.categoria.TipoCategoria;
 import br.edu.unimater.zela.conciliacao.ConciliacaoService;
 import br.edu.unimater.zela.contabancaria.ContaBancaria;
@@ -49,6 +51,9 @@ public class ImportacaoExtratoService {
 
     @Inject
     CasoRepository casoRepository;
+
+    @Inject
+    PeriodoPrestacaoRepository periodoRepository;
 
     @Inject
     ContaBancariaRepository contaBancariaRepository;
@@ -133,6 +138,8 @@ public class ImportacaoExtratoService {
             novas.add(movimentacao);
         }
 
+        validarPeriodosEntregues(caso, novas);
+
         ImportacaoExtrato importacao = new ImportacaoExtrato();
         importacao.contaBancaria = conta;
         importacao.nomeArquivo = nomeArquivo.trim();
@@ -169,12 +176,30 @@ public class ImportacaoExtratoService {
                     "Esta importação possui movimentações vinculadas a lançamentos e não pode ser excluída.");
         }
 
+        if (movimentacaoRepository.existeEmPeriodoEntregue(id)) {
+            throw new BusinessRuleException(
+                    "Esta importação possui movimentações em um período já entregue e não pode ser excluída.");
+        }
+
         Instant agora = Instant.now();
         for (MovimentacaoExtrato movimentacao : movimentacaoRepository.listarPorImportacao(id)) {
             movimentacao.excluidoEm = agora;
         }
         importacao.justificativaExclusao = dto.justificativa().trim();
         importacao.excluidoEm = agora;
+    }
+
+    private void validarPeriodosEntregues(Caso caso, List<MovimentacaoExtrato> novas) {
+        List<PeriodoPrestacao> entregues = periodoRepository.listarEntregues(caso.id);
+        for (MovimentacaoExtrato movimentacao : novas) {
+            boolean emPeriodoEntregue = entregues.stream().anyMatch(periodo ->
+                    !movimentacao.dataMovimentacao.isBefore(periodo.dataInicio)
+                            && !movimentacao.dataMovimentacao.isAfter(periodo.dataFim));
+            if (emPeriodoEntregue) {
+                throw new BusinessRuleException(
+                        "O arquivo traz movimentações novas em um período já entregue e não pode ser importado.");
+            }
+        }
     }
 
     private Caso buscarCaso(UUID casoId) {

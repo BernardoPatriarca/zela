@@ -3,6 +3,7 @@ package br.edu.unimater.zela.usuario;
 import br.edu.unimater.zela.shared.exception.ConflictException;
 import br.edu.unimater.zela.shared.exception.ResourceNotFoundException;
 import br.edu.unimater.zela.usuario.dto.UsuarioCreateDto;
+import br.edu.unimater.zela.usuario.dto.UsuarioDadosProfissionaisDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioResponseDto;
 import br.edu.unimater.zela.usuario.dto.UsuarioUpdateDto;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +44,20 @@ public class UsuarioService {
         return repository.buscarPorId(id)
                 .map(UsuarioResponseDto::from)
                 .orElseGet(() -> provisionar(id, email, nome));
+    }
+
+    @Transactional
+    public UsuarioResponseDto atualizarDadosProfissionais(UsuarioDadosProfissionaisDto dto) {
+        UUID id = me().id();
+        Usuario usuario = repository.buscarPorId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        usuario.nomeCompleto = dto.nomeCompleto().trim();
+        usuario.oabNumero = dto.oabNumero().trim();
+        usuario.oabUf = dto.oabUf().trim().toUpperCase();
+
+        repository.flush();
+        return UsuarioResponseDto.from(usuario);
     }
 
     @Transactional

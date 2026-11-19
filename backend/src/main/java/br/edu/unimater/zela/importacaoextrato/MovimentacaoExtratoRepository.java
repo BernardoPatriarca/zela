@@ -91,8 +91,47 @@ public class MovimentacaoExtratoRepository implements PanacheRepositoryBase<Movi
     }
 
     public List<MovimentacaoExtrato> listarPendentes(List<UUID> contasIds) {
-        return list("contaBancaria.id in ?1 and situacao = ?2 and excluidoEm is null order by criadoEm, id",
-                contasIds, SituacaoMovimentacao.PENDENTE);
+        return list("""
+                from MovimentacaoExtrato m
+                where m.contaBancaria.id in ?1 and m.situacao = ?2 and m.excluidoEm is null
+                and not exists (select 1 from PeriodoPrestacao p
+                    where p.casoId = m.contaBancaria.casoId and p.entregueEm is not null and p.excluidoEm is null
+                    and m.dataMovimentacao between p.dataInicio and p.dataFim)
+                order by m.criadoEm, m.id
+                """, contasIds, SituacaoMovimentacao.PENDENTE);
+    }
+
+    public List<MovimentacaoExtrato> listarPendentesDoPeriodo(List<UUID> contasIds, LocalDate dataInicio,
+                                                               LocalDate dataFim) {
+        return list("""
+                from MovimentacaoExtrato m
+                join fetch m.contaBancaria c
+                where c.id in ?1 and m.situacao = ?2 and m.dataMovimentacao between ?3 and ?4
+                and m.excluidoEm is null
+                order by m.dataMovimentacao, m.id
+                """, contasIds, SituacaoMovimentacao.PENDENTE, dataInicio, dataFim);
+    }
+
+    public List<UUID> listarLancamentosConciliadosDoPeriodo(List<UUID> contasIds, LocalDate dataInicio,
+                                                            LocalDate dataFim) {
+        return getEntityManager()
+                .createQuery("select l.id from MovimentacaoExtrato m join m.lancamento l "
+                        + "where m.contaBancaria.id in ?1 and l.dataLancamento between ?2 and ?3 "
+                        + "and m.excluidoEm is null", UUID.class)
+                .setParameter(1, contasIds)
+                .setParameter(2, dataInicio)
+                .setParameter(3, dataFim)
+                .getResultList();
+    }
+
+    public boolean existeEmPeriodoEntregue(UUID importacaoId) {
+        return count("""
+                from MovimentacaoExtrato m
+                where m.importacao.id = ?1 and m.excluidoEm is null
+                and exists (select 1 from PeriodoPrestacao p
+                    where p.casoId = m.contaBancaria.casoId and p.entregueEm is not null and p.excluidoEm is null
+                    and m.dataMovimentacao between p.dataInicio and p.dataFim)
+                """, importacaoId) > 0;
     }
 
     public List<UUID> listarLancamentosConciliados(List<UUID> lancamentosIds) {

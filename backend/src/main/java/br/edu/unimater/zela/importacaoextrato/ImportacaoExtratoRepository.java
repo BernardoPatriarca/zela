@@ -54,6 +54,27 @@ public class ImportacaoExtratoRepository implements PanacheRepositoryBase<Import
                 .firstResultOptional();
     }
 
+    public List<ImportacaoExtrato> listarQueTocamPeriodo(List<UUID> contasIds, LocalDate dataInicio,
+                                                         LocalDate dataFim) {
+        return list("""
+                from ImportacaoExtrato i
+                join fetch i.contaBancaria c
+                where c.id in ?1 and i.dataFim >= ?2 and i.dataInicio <= ?3 and i.excluidoEm is null
+                order by i.dataInicio
+                """, contasIds, dataInicio, dataFim);
+    }
+
+    public List<ImportacaoExtrato> listarComSaldoNoPeriodo(List<UUID> contasIds, LocalDate dataInicio,
+                                                           LocalDate dataFim) {
+        return list("""
+                from ImportacaoExtrato i
+                join fetch i.contaBancaria c
+                where c.id in ?1 and i.saldoFinal is not null and i.dataSaldoFinal between ?2 and ?3
+                and i.excluidoEm is null
+                order by i.dataSaldoFinal desc, i.criadoEm desc
+                """, contasIds, dataInicio, dataFim);
+    }
+
     public boolean existePorHashArquivo(UUID contaBancariaId, String hashArquivo) {
         return count("contaBancaria.id = ?1 and hashArquivo = ?2 and excluidoEm is null", contaBancariaId,
                 hashArquivo) > 0;

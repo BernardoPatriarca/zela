@@ -10,6 +10,19 @@ Parameters:
   DbPassword:
     Type: String
     NoEcho: true
+  StorageS3Endpoint:
+    Type: String
+  StorageS3Region:
+    Type: String
+  StorageS3AccessKeyId:
+    Type: String
+    NoEcho: true
+  StorageS3SecretAccessKey:
+    Type: String
+    NoEcho: true
+  StorageS3Bucket:
+    Type: String
+    Default: relatorios
 
 Globals:
   Api:
@@ -48,6 +61,11 @@ Resources:
           SUPABASE_DB_URL: !Ref DbUrl
           SUPABASE_DB_USER: !Ref DbUser
           SUPABASE_DB_PASSWORD: !Ref DbPassword
+          STORAGE_S3_ENDPOINT: !Ref StorageS3Endpoint
+          STORAGE_S3_REGION: !Ref StorageS3Region
+          STORAGE_S3_ACCESS_KEY_ID: !Ref StorageS3AccessKeyId
+          STORAGE_S3_SECRET_ACCESS_KEY: !Ref StorageS3SecretAccessKey
+          STORAGE_S3_BUCKET: !Ref StorageS3Bucket
       Events:
         HttpApiEvent:
           Type: HttpApi

@@ -23,6 +23,8 @@ export function criarLancamentoForm() {
     contaBancariaId: fb.control<string | null>(null, Validators.required),
     categoriaId: fb.control<string | null>(null, Validators.required),
     descricao: ['', [Validators.required, Validators.maxLength(255)]],
+    emitenteNome: ['', [Validators.maxLength(150)]],
+    emitenteDocumento: ['', [Validators.maxLength(18)]],
     justificativa: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
   });
 }

@@ -133,6 +133,14 @@ export class LancamentosPage {
     return this.form.controls.descricao;
   }
 
+  get emitenteNome() {
+    return this.form.controls.emitenteNome;
+  }
+
+  get emitenteDocumento() {
+    return this.form.controls.emitenteDocumento;
+  }
+
   get justificativa() {
     return this.form.controls.justificativa;
   }
@@ -293,6 +301,8 @@ export class LancamentosPage {
       contaBancariaId: null,
       categoriaId: null,
       descricao: '',
+      emitenteNome: '',
+      emitenteDocumento: '',
       justificativa: '',
     });
     this.form.controls.tipo.enable();
@@ -316,6 +326,8 @@ export class LancamentosPage {
       contaBancariaId: lancamento.contaBancariaId,
       categoriaId: lancamento.categoriaId,
       descricao: lancamento.descricao,
+      emitenteNome: lancamento.emitenteNome ?? '',
+      emitenteDocumento: lancamento.emitenteDocumento ?? '',
       justificativa: '',
     });
     this.form.controls.tipo.disable();
@@ -356,6 +368,8 @@ export class LancamentosPage {
       dataLancamento: formatLocalDate(valores.dataLancamento!),
       valor: valores.valor!,
       descricao: valores.descricao.trim(),
+      emitenteNome: valores.emitenteNome.trim() || null,
+      emitenteDocumento: valores.emitenteDocumento.trim() || null,
     };
 
     try {

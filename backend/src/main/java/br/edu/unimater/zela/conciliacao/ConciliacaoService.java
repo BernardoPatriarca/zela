@@ -115,19 +115,17 @@ public class ConciliacaoService {
             if (lancamentos.isEmpty()) {
                 continue;
             }
-            if (movimentacoes.size() != lancamentos.size()) {
-                ambiguas += movimentacoes.size();
-                continue;
-            }
+            int pares = Math.min(movimentacoes.size(), lancamentos.size());
 
-            for (int i = 0; i < movimentacoes.size(); i++) {
+            for (int i = 0; i < pares; i++) {
                 MovimentacaoExtrato movimentacao = movimentacoes.get(i);
                 movimentacao.lancamento = lancamentos.get(i);
                 movimentacao.situacao = SituacaoMovimentacao.CONCILIADA;
                 movimentacao.formaConciliacao = FormaConciliacao.AUTOMATICA;
                 movimentacao.conciliadaEm = agora;
             }
-            conciliadas += movimentacoes.size();
+            conciliadas += pares;
+            ambiguas += movimentacoes.size() - pares;
         }
 
         return new ConciliacaoAutomaticaResultadoDto(conciliadas, pendentes.size() - conciliadas, ambiguas);

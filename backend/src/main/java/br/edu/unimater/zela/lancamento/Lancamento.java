@@ -43,6 +43,12 @@ public class Lancamento {
     @Column(nullable = false, length = 255)
     public String descricao;
 
+    @Column(name = "emitente_nome", length = 150)
+    public String emitenteNome;
+
+    @Column(name = "emitente_documento", length = 14)
+    public String emitenteDocumento;
+
     @Column(name = "justificativa_alteracao", length = 500)
     public String justificativaAlteracao;
 

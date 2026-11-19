@@ -7,6 +7,15 @@ export interface UsuarioResponse {
   id: string;
   nome: string;
   email: string;
+  nomeCompleto: string | null;
+  oabNumero: string | null;
+  oabUf: string | null;
+}
+
+export interface DadosProfissionaisRequest {
+  nomeCompleto: string;
+  oabNumero: string;
+  oabUf: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -15,5 +24,12 @@ export class UsuarioApi {
 
   obterPerfil(): Observable<UsuarioResponse> {
     return this.http.get<UsuarioResponse>(`${environment.apiUrl}/usuarios/me`);
+  }
+
+  salvarDadosProfissionais(dados: DadosProfissionaisRequest): Observable<UsuarioResponse> {
+    return this.http.put<UsuarioResponse>(
+      `${environment.apiUrl}/usuarios/me/dados-profissionais`,
+      dados,
+    );
   }
 }

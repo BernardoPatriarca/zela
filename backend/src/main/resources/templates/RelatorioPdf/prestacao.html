@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Prestação de contas</title>
+<style type="text/css">
+{|
+@page {
+  size: A4;
+  margin: 2cm 2cm 2.2cm 2cm;
+  @bottom-center {
+    content: "Página " counter(page) " de " counter(pages);
+    font-family: "Liberation Sans", sans-serif;
+    font-size: 8pt;
+  }
+}
+@page paisagem {
+  size: A4 landscape;
+  margin: 1.5cm 1.5cm 2cm 1.5cm;
+  @bottom-center {
+    content: "Página " counter(page) " de " counter(pages);
+    font-family: "Liberation Sans", sans-serif;
+    font-size: 8pt;
+  }
+}
+body {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 10pt;
+  color: #000000;
+}
+h1 {
+  font-size: 13pt;
+  text-align: center;
+  margin: 0 0 12pt 0;
+}
+h2 {
+  font-size: 11pt;
+  margin: 16pt 0 6pt 0;
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 9.5pt;
+  margin: 10pt 0 4pt 0;
+  page-break-after: avoid;
+}
+p {
+  margin: 0 0 8pt 0;
+  line-height: 1.4;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+th, td {
+  border: 1px solid #555555;
+  padding: 2pt 4pt;
+  font-size: 8pt;
+  vertical-align: top;
+}
+th {
+  background-color: #e6e6e6;
+  text-align: left;
+}
+tr {
+  page-break-inside: avoid;
+}
+td.num, th.num {
+  text-align: right;
+  white-space: nowrap;
+}
+tr.total td {
+  font-weight: bold;
+  background-color: #f2f2f2;
+}
+tr.anterior td {
+  font-style: normal;
+  background-color: #fafafa;
+}
+table.cabecalho td {
+  font-size: 9pt;
+  border: 1px solid #555555;
+}
+table.cabecalho td.rotulo {
+  width: 28%;
+  font-weight: bold;
+  background-color: #e6e6e6;
+}
+.peticao {
+  page-break-after: always;
+}
+.peticao p.texto {
+  text-align: justify;
+  text-indent: 1.5cm;
+  font-size: 11pt;
+  line-height: 1.6;
+}
+.peticao p.endereco {
+  font-weight: bold;
+  text-align: justify;
+  font-size: 11pt;
+  margin-bottom: 28pt;
+}
+.planilha {
+  page: paisagem;
+  width: 26.4cm;
+}
+.planilha.seguinte {
+  page-break-before: always;
+}
+.resumo {
+  page: auto;
+  page-break-before: always;
+}
+.centro {
+  text-align: center;
+}
+table.assinaturas {
+  margin-top: 36pt;
+}
+table.assinaturas td {
+  border: none;
+  text-align: center;
+  font-size: 9pt;
+  padding-top: 28pt;
+}
+table.assinaturas td.linha {
+  border-top: 1px solid #000000;
+}
+table.assinaturas td.espaco {
+  width: 8%;
+}
+ol.anexos li {
+  font-size: 9pt;
+  margin-bottom: 3pt;
+}
+|}
+</style>
+</head>
+<body>
+
+<div class="peticao">
+  <p class="endereco">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(ÍZA) DE DIREITO DA {documento.varaMaiusculo} DA COMARCA DE {documento.comarcaMaiusculo}</p>
+  <p>Autos nº {documento.autos}.</p>
+  <p class="texto"><b>{documento.responsavel}</b>, já qualificado(a), por seu(sua) advogado(a), vem apresentar a <b>PRESTAÇÃO DE CONTAS</b> referente ao período de {documento.periodo}, nos termos do {documento.fundamentacao}, conforme demonstrativo e documentos anexos, com saldo final de <b>{documento.saldoFinal}</b>{#if documento.comRessalvas}, com as ressalvas indicadas no item 5 do demonstrativo{/if}. Requer a intimação do Ministério Público e, ao final, a homologação das contas.</p>
+  <p class="texto">{documento.local}, {documento.dataPeticao}.</p>
+  <p class="centro" style="margin-top: 36pt;">{documento.advogado}<br />{documento.oab}</p>
+</div>
+
+<div class="planilha">
+  <h1>PRESTAÇÃO DE CONTAS — DEMONSTRATIVO</h1>
+  <table class="cabecalho">
+    <tr><td class="rotulo">Juízo</td><td>{documento.juizo}</td></tr>
+    <tr><td class="rotulo">Autos</td><td>{documento.autos}</td></tr>
+    <tr><td class="rotulo">{documento.rotuloProtegido}</td><td>{documento.protegido}, CPF {documento.cpfProtegido}</td></tr>
+    <tr><td class="rotulo">{documento.rotuloResponsavel}</td><td>{documento.responsavel}, CPF {documento.cpfResponsavel}</td></tr>
+    <tr><td class="rotulo">Advogado(a)</td><td>{documento.advogado}, {documento.oab}</td></tr>
+    <tr><td class="rotulo">Período</td><td>{documento.periodo}</td></tr>
+    <tr><td class="rotulo">Periodicidade</td><td>{documento.periodicidade}</td></tr>
+  </table>
+</div>
+
+{#for conta in documento.planilhas}
+<div class="planilha{#if conta_index != 0} seguinte{/if}">
+  <h2>1. Demonstrativo analítico — {conta.titulo}</h2>
+  {#for mes in conta.meses}
+  <h3>{mes.titulo}</h3>
+  <table>
+    <colgroup>
+      <col style="width: 6%" />
+      <col style="width: 8%" />
+      <col style="width: 20%" />
+      <col style="width: 24%" />
+      <col style="width: 14%" />
+      <col style="width: 9%" />
+      <col style="width: 9%" />
+      <col style="width: 10%" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Nº doc</th>
+        <th>Data</th>
+        <th>Emitente / origem</th>
+        <th>Histórico</th>
+        <th>Classificação</th>
+        <th class="num">Crédito</th>
+        <th class="num">Débito</th>
+        <th class="num">Saldo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="anterior">
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>Saldo anterior</td>
+        <td>—</td>
+        <td></td>
+        <td></td>
+        <td class="num">{mes.saldoAnterior}</td>
+      </tr>
+      {#for linha in mes.linhas}
+      <tr>
+        <td>{linha.numero}</td>
+        <td>{linha.data}</td>
+        <td>{linha.emitente}</td>
+        <td>{linha.historico}</td>
+        <td>{linha.classificacao}</td>
+        <td class="num">{linha.credito}</td>
+        <td class="num">{linha.debito}</td>
+        <td class="num">{linha.saldo}</td>
+      </tr>
+      {/for}
+      <tr class="total">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>Totais do mês</td>
+        <td></td>
+        <td class="num">{mes.totalCredito}</td>
+        <td class="num">{mes.totalDebito}</td>
+        <td class="num">{mes.saldoFinal}</td>
+      </tr>
+    </tbody>
+  </table>
+  {/for}
+</div>
+{/for}
+
+<div class="resumo">
+  <h2>2. Demonstrativo consolidado</h2>
+  <table>
+    <colgroup>
+      <col style="width: 31%" />
+      <col style="width: 23%" />
+      <col style="width: 23%" />
+      <col style="width: 23%" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th class="num">Receitas</th>
+        <th class="num">Despesas</th>
+        <th class="num">Saldo final do mês</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#for linha in documento.consolidado}
+      <tr>
+        <td>{linha.titulo}</td>
+        <td class="num">{linha.receitas}</td>
+        <td class="num">{linha.despesas}</td>
+        <td class="num">{linha.saldoFinal}</td>
+      </tr>
+      {/for}
+      <tr class="total">
+        <td>{documento.totalConsolidado.titulo}</td>
+        <td class="num">{documento.totalConsolidado.receitas}</td>
+        <td class="num">{documento.totalConsolidado.despesas}</td>
+        <td class="num">{documento.totalConsolidado.saldoFinal}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Conferência aritmética</h2>
+  <table>
+    <colgroup>
+      <col style="width: 36%" />
+      <col style="width: 16%" />
+      <col style="width: 16%" />
+      <col style="width: 16%" />
+      <col style="width: 16%" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Conta</th>
+        <th class="num">Saldo inicial</th>
+        <th class="num">+ Receitas</th>
+        <th class="num">− Despesas</th>
+        <th class="num">= Saldo final</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#for conferencia in documento.conferencias}
+      <tr>
+        <td>{conferencia.titulo}</td>
+        <td class="num">{conferencia.saldoInicial}</td>
+        <td class="num">{conferencia.receitas}</td>
+        <td class="num">{conferencia.despesas}</td>
+        <td class="num">{conferencia.saldoFinal}</td>
+      </tr>
+      {/for}
+    </tbody>
+  </table>
+
+  <h2>4. Conciliação com o extrato bancário</h2>
+  <table>
+    <colgroup>
+      <col style="width: 36%" />
+      <col style="width: 14%" />
+      <col style="width: 17%" />
+      <col style="width: 17%" />
+      <col style="width: 16%" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Conta</th>
+        <th>Data do saldo</th>
+        <th class="num">Saldo no extrato</th>
+        <th class="num">Saldo calculado</th>
+        <th class="num">Diferença</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#for conciliacao in documento.conciliacoes}
+      {#if conciliacao.comExtrato}
+      <tr>
+        <td>{conciliacao.titulo}</td>
+        <td>{conciliacao.dataExtrato}</td>
+        <td class="num">{conciliacao.saldoExtrato}</td>
+        <td class="num">{conciliacao.saldoCalculado}</td>
+        <td class="num">{conciliacao.diferenca}</td>
+      </tr>
+      {#else}
+      <tr>
+        <td>{conciliacao.titulo}</td>
+        <td colspan="4">Nenhum extrato com saldo final foi importado para este período.</td>
+      </tr>
+      {/if}
+      {/for}
+    </tbody>
+  </table>
+
+  <h2>5. Ressalvas e notas explicativas</h2>
+  {#if documento.ressalvas}
+  <h3>Ressalvas / pendências declaradas</h3>
+  <ul>
+    {#for ressalva in documento.ressalvas}
+    <li style="font-size: 9pt; margin-bottom: 4pt;">{ressalva.texto}{#if ressalva.justificativa} Justificativa: {ressalva.justificativa}{/if}</li>
+    {/for}
+  </ul>
+  {#else}
+  <p style="font-size: 9pt;">Não há ressalvas a declarar neste período.</p>
+  {/if}
+  {#if documento.notasExplicativas}
+  <h3>Notas explicativas</h3>
+  <p style="font-size: 9pt;">{documento.notasExplicativas}</p>
+  {/if}
+
+  <h2>6. Rol de anexos</h2>
+  <ol class="anexos">
+    <li>Cópia da sentença/termo de curatela ou tutela (e da homologação do período anterior, se houver).</li>
+    <li>Extratos de todas as contas do período (corrente, poupança, aplicações).</li>
+    <li>Comprovantes numerados na mesma ordem da planilha (E-xx receitas, D-xx despesas).</li>
+    <li>Recibos de autônomos com nome, CPF, RG, endereço, telefone, valor por extenso, serviço, data e assinatura.</li>
+    <li>Declaração de IR do curatelado, quando houver.</li>
+    <li>Planilha em formato editável (exigência de alguns juízos/MPs).</li>
+  </ol>
+
+  <table class="assinaturas">
+    <tr>
+      <td class="linha">{documento.responsavel}<br />{documento.rotuloResponsavel}</td>
+      <td class="espaco"></td>
+      <td class="linha">{documento.advogado}<br />{documento.oab}</td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
